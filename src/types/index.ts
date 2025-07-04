@@ -3,6 +3,7 @@ export type ActivityLevel = 'Sedentary' | 'Lightly active' | 'Moderately active'
 export type Gender = 'male' | 'female' | '';
 export type HeightUnit = 'cm' | 'ft';
 export type WeightUnit = 'kg' | 'lbs';
+export type MealType = 'Breakfast' | 'Lunch' | 'Dinner' | 'Snack';
 
 export interface UserData {
   user_first_name: string;
@@ -32,6 +33,7 @@ export interface Meal {
   carbohydrates: number;
   fat: number;
   createdAt: string; // ISO string
+  mealType?: MealType;
 }
 
 export interface DailyLog {

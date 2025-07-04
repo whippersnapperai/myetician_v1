@@ -41,7 +41,7 @@ export function useUserData() {
   const logMeal = useCallback((meal: Omit<Meal, 'id' | 'createdAt'>) => {
     const newMeal: Meal = {
       ...meal,
-      id: new Date().toISOString(),
+      id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
     };
     
