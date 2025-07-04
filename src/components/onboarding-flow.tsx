@@ -17,20 +17,21 @@ import { Slider } from '@/components/ui/slider';
 import { useUserData } from '@/hooks/use-user-data';
 import { calculateBMR, calculateTDEE, calculateCaloricGoal, calculateAge } from '@/lib/calculations';
 import type { UserData } from '@/types';
+import { FormField, FormItem, FormControl, FormMessage, FormLabel } from '@/components/ui/form';
 
 const formSchema = z.object({
   user_first_name: z.string().min(1, 'Please enter your name.'),
-  user_goal: z.enum(['Build muscle', 'Maintain weight', 'Lose weight']),
-  user_current_activity_level: z.enum(['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active']),
-  user_gender: z.enum(['male', 'female']),
-  dob_year: z.string().min(4, 'Select year'),
+  user_goal: z.enum(['Build muscle', 'Maintain weight', 'Lose weight'], { required_error: 'Please select a goal.'}),
+  user_current_activity_level: z.enum(['Sedentary', 'Lightly active', 'Moderately active', 'Very active', 'Extremely active'], { required_error: 'Please select an activity level.'}),
+  user_gender: z.enum(['male', 'female'], { required_error: 'Please select a gender.'}),
+  dob_year: z.string().min(1, 'Select year'),
   dob_month: z.string().min(1, 'Select month'),
   dob_day: z.string().min(1, 'Select day'),
-  user_height: z.number().min(1, 'Height is required'),
+  user_height: z.number({ required_error: 'Height is required.'}).min(1, 'Height must be a positive number.'),
   user_height_unit: z.enum(['cm', 'ft']),
-  user_current_weight: z.number().min(1, 'Weight is required'),
+  user_current_weight: z.number({ required_error: 'Weight is required.'}).min(1, 'Weight must be a positive number.'),
   user_current_weight_unit: z.enum(['kg', 'lbs']),
-  user_goal_weight: z.number().min(1, 'Goal weight is required'),
+  user_goal_weight: z.number({ required_error: 'Goal weight is required.'}).min(1, 'Goal weight must be a positive number.'),
   user_goal_weight_unit: z.enum(['kg', 'lbs']),
   user_caloric_goal_intensity_value: z.number().min(0).max(50),
 });
@@ -58,7 +59,7 @@ export default function OnboardingFlow() {
     },
   });
 
-  const { formState: { errors }, trigger, getValues, watch } = methods;
+  const { trigger, getValues } = methods;
 
   const handleNext = async () => {
     const fields: (keyof OnboardingFormValues)[] = [
@@ -166,31 +167,43 @@ const StepName = () => {
 };
 
 const StepGoal = () => {
-    const { control, formState: { errors } } = useFormContext();
+    const { control } = useFormContext();
     const options = ['Build muscle', 'Maintain weight', 'Lose weight'];
     return (
       <div>
         <CardTitle className="mb-2 font-headline">What's your primary goal?</CardTitle>
         <CardDescription>This helps us tailor your daily targets.</CardDescription>
-        <RadioGroup
-          onValueChange={(value) => control.register('user_goal').onChange({ target: { value } })}
-          defaultValue={control._defaultValues.user_goal}
-          className="mt-6 grid grid-cols-1 gap-4"
-        >
-          {options.map(option => (
-            <Label key={option} className="flex items-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <RadioGroupItem value={option} id={option} />
-              <span>{option}</span>
-            </Label>
-          ))}
-        </RadioGroup>
-        {errors.user_goal && <p className="text-destructive text-sm mt-1">{`${errors.user_goal.message}`}</p>}
+        <FormField
+          control={control}
+          name="user_goal"
+          render={({ field }) => (
+            <FormItem className="mt-6">
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="grid grid-cols-1 gap-4"
+                >
+                  {options.map(option => (
+                    <FormItem key={option}>
+                      <Label className="flex items-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
+                        <FormControl>
+                          <RadioGroupItem value={option} />
+                        </FormControl>
+                        <span>{option}</span>
+                      </Label>
+                    </FormItem>
+                  ))}
+                </RadioGroup>
+              <FormMessage className="mt-2" />
+            </FormItem>
+          )}
+        />
       </div>
     );
 };
 
 const StepActivity = () => {
-    const { control, formState: { errors } } = useFormContext();
+    const { control } = useFormContext();
     const options = [
         { value: 'Sedentary', label: 'Sedentary', desc: 'Little or no exercise' },
         { value: 'Lightly active', label: 'Lightly Active', desc: 'Light exercise 1-3 days/week' },
@@ -202,48 +215,76 @@ const StepActivity = () => {
       <div>
         <CardTitle className="mb-2 font-headline">Describe your activity level.</CardTitle>
         <CardDescription>This is crucial for estimating your daily calorie needs.</CardDescription>
-        <RadioGroup
-          onValueChange={(value) => control.register('user_current_activity_level').onChange({ target: { value } })}
-          defaultValue={control._defaultValues.user_current_activity_level}
-          className="mt-6 grid grid-cols-1 gap-2"
-        >
-          {options.map(option => (
-            <Label key={option.value} className="flex flex-col items-start space-x-3 p-3 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <div className="flex items-center">
-                <RadioGroupItem value={option.value} id={option.value} className="mr-3"/>
-                <span className="font-semibold">{option.label}</span>
-              </div>
-              <span className="text-sm text-muted-foreground ml-7">{option.desc}</span>
-            </Label>
-          ))}
-        </RadioGroup>
-        {errors.user_current_activity_level && <p className="text-destructive text-sm mt-1">{`${errors.user_current_activity_level.message}`}</p>}
+        <FormField
+          control={control}
+          name="user_current_activity_level"
+          render={({ field }) => (
+            <FormItem className="mt-6">
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="grid grid-cols-1 gap-2"
+                >
+                  {options.map(option => (
+                    <FormItem key={option.value}>
+                        <Label className="flex flex-col items-start p-3 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer space-y-1">
+                            <div className="flex items-center w-full">
+                                <FormControl>
+                                    <RadioGroupItem value={option.value} className="mr-3"/>
+                                </FormControl>
+                                <span className="font-semibold flex-1">{option.label}</span>
+                            </div>
+                            <span className="text-sm text-muted-foreground pl-7">{option.desc}</span>
+                        </Label>
+                    </FormItem>
+                  ))}
+                </RadioGroup>
+              <FormMessage className="mt-2" />
+            </FormItem>
+          )}
+        />
       </div>
     );
 };
 
 
 const StepGender = () => {
-    const { control, formState: { errors } } = useFormContext();
+    const { control } = useFormContext();
     return (
       <div>
         <CardTitle className="mb-2 font-headline">What's your gender?</CardTitle>
         <CardDescription>Biological sex is used to calculate your metabolic rate.</CardDescription>
-        <RadioGroup
-          onValueChange={(value) => control.register('user_gender').onChange({ target: { value } })}
-          defaultValue={control._defaultValues.user_gender}
-          className="mt-6 grid grid-cols-2 gap-4"
-        >
-            <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <RadioGroupItem value="male" id="male" />
-              <span>Male</span>
-            </Label>
-            <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary">
-              <RadioGroupItem value="female" id="female" />
-              <span>Female</span>
-            </Label>
-        </RadioGroup>
-        {errors.user_gender && <p className="text-destructive text-sm mt-1">{`${errors.user_gender.message}`}</p>}
+        <FormField
+          control={control}
+          name="user_gender"
+          render={({ field }) => (
+            <FormItem className="mt-6">
+              <RadioGroup
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                className="grid grid-cols-2 gap-4"
+              >
+                  <FormItem>
+                    <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
+                      <FormControl>
+                          <RadioGroupItem value="male" />
+                      </FormControl>
+                      <span>Male</span>
+                    </Label>
+                  </FormItem>
+                  <FormItem>
+                      <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
+                          <FormControl>
+                              <RadioGroupItem value="female" />
+                          </FormControl>
+                          <span>Female</span>
+                      </Label>
+                  </FormItem>
+              </RadioGroup>
+              <FormMessage className="mt-2" />
+            </FormItem>
+          )}
+        />
       </div>
     );
 };
@@ -260,18 +301,48 @@ const StepDob = () => {
         <CardTitle className="mb-2 font-headline">What's your date of birth?</CardTitle>
         <CardDescription>Your age helps us make more accurate calculations.</CardDescription>
         <div className="mt-6 grid grid-cols-3 gap-4">
-          <Select onValueChange={(value) => control.register('dob_year').onChange({ target: { value } })}>
-            <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
-            <SelectContent>{years.map(y => <SelectItem key={y} value={`${y}`}>{y}</SelectItem>)}</SelectContent>
-          </Select>
-           <Select onValueChange={(value) => control.register('dob_month').onChange({ target: { value } })}>
-            <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-            <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-          </Select>
-           <Select onValueChange={(value) => control.register('dob_day').onChange({ target: { value } })}>
-            <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
-            <SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-          </Select>
+          <FormField
+            control={control}
+            name="dob_year"
+            render={({ field }) => (
+              <FormItem>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+                  </FormControl>
+                  <SelectContent>{years.map(y => <SelectItem key={y} value={`${y}`}>{y}</SelectItem>)}</SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={control}
+            name="dob_month"
+            render={({ field }) => (
+              <FormItem>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                  </FormControl>
+                  <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={control}
+            name="dob_day"
+            render={({ field }) => (
+              <FormItem>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                  </FormControl>
+                  <SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                </Select>
+              </FormItem>
+            )}
+          />
         </div>
         {(errors.dob_year || errors.dob_month || errors.dob_day) && <p className="text-destructive text-sm mt-1">Please select a valid date.</p>}
       </div>
@@ -279,68 +350,148 @@ const StepDob = () => {
 };
 
 const StepHeight = () => {
-    const { register, control, formState: { errors } } = useFormContext();
+    const { control } = useFormContext();
     return (
       <div>
         <CardTitle className="mb-2 font-headline">What's your height?</CardTitle>
-        <div className="mt-6 flex gap-2">
-            <Input type="number" {...register('user_height', { valueAsNumber: true })} placeholder="e.g. 180" />
-            <Select onValueChange={(value) => control.register('user_height_unit').onChange({ target: { value } })} defaultValue={control._defaultValues.user_height_unit}>
-                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="cm">cm</SelectItem>
-                    <SelectItem value="ft">ft</SelectItem>
-                </SelectContent>
-            </Select>
+         <div className="mt-6 flex items-start gap-2">
+            <FormField
+              control={control}
+              name="user_height"
+              render={({ field }) => (
+                <FormItem className="flex-grow">
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 180"
+                      {...field}
+                      onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="user_height_unit"
+              render={({ field }) => (
+                <FormItem>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                            <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="cm">cm</SelectItem>
+                            <SelectItem value="ft">ft</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
-        {errors.user_height && <p className="text-destructive text-sm mt-1">{`${errors.user_height.message}`}</p>}
       </div>
     );
 };
 
 const StepCurrentWeight = () => {
-    const { register, control, formState: { errors } } = useFormContext();
+    const { control } = useFormContext();
     return (
       <div>
         <CardTitle className="mb-2 font-headline">What's your current weight?</CardTitle>
-         <div className="mt-6 flex gap-2">
-            <Input type="number" {...register('user_current_weight', { valueAsNumber: true })} placeholder="e.g. 75" />
-            <Select onValueChange={(value) => control.register('user_current_weight_unit').onChange({ target: { value } })} defaultValue={control._defaultValues.user_current_weight_unit}>
-                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="lbs">lbs</SelectItem>
-                </SelectContent>
-            </Select>
+         <div className="mt-6 flex items-start gap-2">
+            <FormField
+              control={control}
+              name="user_current_weight"
+              render={({ field }) => (
+                <FormItem className="flex-grow">
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 75"
+                       {...field}
+                      onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="user_current_weight_unit"
+              render={({ field }) => (
+                <FormItem>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="lbs">lbs</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
-        {errors.user_current_weight && <p className="text-destructive text-sm mt-1">{`${errors.user_current_weight.message}`}</p>}
       </div>
     );
 };
 
 const StepGoalWeight = () => {
-    const { register, control, formState: { errors } } = useFormContext();
+    const { control } = useFormContext();
     return (
       <div>
         <CardTitle className="mb-2 font-headline">What's your goal weight?</CardTitle>
-         <div className="mt-6 flex gap-2">
-            <Input type="number" {...register('user_goal_weight', { valueAsNumber: true })} placeholder="e.g. 70" />
-            <Select onValueChange={(value) => control.register('user_goal_weight_unit').onChange({ target: { value } })} defaultValue={control._defaultValues.user_goal_weight_unit}>
-                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="kg">kg</SelectItem>
-                    <SelectItem value="lbs">lbs</SelectItem>
-                </SelectContent>
-            </Select>
+         <div className="mt-6 flex items-start gap-2">
+            <FormField
+              control={control}
+              name="user_goal_weight"
+              render={({ field }) => (
+                <FormItem className="flex-grow">
+                  <FormControl>
+                    <Input
+                      type="number"
+                      placeholder="e.g. 70"
+                       {...field}
+                      onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                      value={field.value ?? ''}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={control}
+              name="user_goal_weight_unit"
+              render={({ field }) => (
+                <FormItem>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                          <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                          <SelectItem value="kg">kg</SelectItem>
+                          <SelectItem value="lbs">lbs</SelectItem>
+                      </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
         </div>
-        {errors.user_goal_weight && <p className="text-destructive text-sm mt-1">{`${errors.user_goal_weight.message}`}</p>}
       </div>
     );
 };
 
 const StepIntensity = () => {
     const { control, watch } = useFormContext();
-    const intensity = watch('user_caloric_goal_intensity_value');
     const goal = watch('user_goal');
     let label;
     switch (goal) {
@@ -358,19 +509,30 @@ const StepIntensity = () => {
             : `How aggressively do you want to pursue your goal?`}
         </CardDescription>
          <div className="mt-8">
-            <Label className="flex justify-between"><span>{label}</span><span className="font-bold text-primary">{intensity}%</span></Label>
-            <Slider
-              defaultValue={[20]}
-              max={50}
-              step={1}
-              onValueChange={(value) => control.register('user_caloric_goal_intensity_value').onChange({ target: { value: value[0] } })}
-              disabled={goal === 'Maintain weight'}
-              className="mt-2"
+            <FormField
+              control={control}
+              name="user_caloric_goal_intensity_value"
+              render={({ field }) => (
+                <FormItem>
+                  <Label className="flex justify-between"><span>{label}</span><span className="font-bold text-primary">{field.value}%</span></Label>
+                  <FormControl>
+                    <Slider
+                      value={[field.value]}
+                      max={50}
+                      step={1}
+                      onValueChange={(value) => field.onChange(value[0])}
+                      disabled={goal === 'Maintain weight'}
+                      className="mt-2"
+                    />
+                  </FormControl>
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>Slower</span>
+                    <span>Faster</span>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
             />
-            <div className="flex justify-between text-xs text-muted-foreground mt-1">
-              <span>Slower</span>
-              <span>Faster</span>
-            </div>
          </div>
       </div>
     );
