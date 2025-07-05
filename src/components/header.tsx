@@ -20,16 +20,15 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
+import { supabase } from '@/lib/supabase';
 
 export default function Header() {
   const router = useRouter();
   const { user, userData } = useUserData();
 
   const handleLogout = async () => {
-    if (!auth) return;
-    await signOut(auth);
+    if (!supabase) return;
+    await supabase.auth.signOut();
     router.push('/onboarding');
   };
 
@@ -75,8 +74,8 @@ export default function Header() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                           <Avatar className="h-8 w-8">
-                            {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || ''} />}
-                            <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                            {user.user_metadata?.avatar_url && <AvatarImage src={user.user_metadata.avatar_url} alt={user.user_metadata?.full_name || ''} />}
+                            <AvatarFallback>{getInitials(user.user_metadata?.full_name)}</AvatarFallback>
                           </Avatar>
                         </Button>
                       </DropdownMenuTrigger>
@@ -88,7 +87,7 @@ export default function Header() {
                   <DropdownMenuContent className="w-56" align="end" forceMount>
                     <DropdownMenuLabel className="font-normal">
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium leading-none">{userData?.user_first_name || user.displayName}</p>
+                        <p className="text-sm font-medium leading-none">{userData?.user_first_name || user.user_metadata?.full_name}</p>
                         <p className="text-xs leading-none text-muted-foreground">
                           {user.email}
                         </p>

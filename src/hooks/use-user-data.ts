@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext } from 'react';
-import type { User } from 'firebase/auth';
+import type { User } from '@supabase/supabase-js';
 import type { UserData, Meal, DailyLog } from '@/types';
 
 export interface UserDataContextType {

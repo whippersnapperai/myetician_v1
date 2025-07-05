@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,8 +6,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Mail, Loader2, Pencil } from 'lucide-react';
-import { GoogleAuthProvider, signInWithPopup, type User } from 'firebase/auth';
-import { auth, isFirebaseConfigured } from '@/lib/firebase';
+import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -580,7 +579,6 @@ const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
     );
 };
 
-
 const StepAuth = () => {
   const { getValues } = useFormContext<OnboardingFormValues>();
   const { saveUserData } = useUserData();
@@ -623,19 +621,26 @@ const StepAuth = () => {
   };
 
   const handleGoogleSignIn = async () => {
-    if (!isFirebaseConfigured || !auth) {
+    if (!isSupabaseConfigured || !supabase) {
         toast({
             variant: "destructive",
-            title: "Firebase Not Configured",
-            description: "Please ensure your Firebase credentials are correct.",
+            title: "Supabase Not Configured",
+            description: "Please ensure your Supabase credentials are correct.",
         });
         return;
     }
     setIsSigningIn(true);
-    const provider = new GoogleAuthProvider();
     try {
-      const result = await signInWithPopup(auth, provider);
-      await handleFinalSubmit(result.user);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+      
+      if (error) throw error;
+      
+      // The redirect will handle the rest
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
       toast({
@@ -643,7 +648,6 @@ const StepAuth = () => {
         title: "Sign-in failed",
         description: error.message || "Could not complete sign-in with Google.",
       });
-    } finally {
       setIsSigningIn(false);
     }
   };
