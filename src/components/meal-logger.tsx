@@ -41,13 +41,29 @@ export default function MealLogger() {
       <CardContent className="grid grid-cols-1 gap-4">
         <Dialog open={isManualOpen} onOpenChange={setManualOpen}>
           <DialogTrigger asChild>
-            <Button variant="outline"><Utensils className="mr-2 h-4 w-4" /> Log Manually</Button>
+            <button className="group text-left p-4 border rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-4 w-full">
+              <div className="bg-accent/50 p-3 rounded-lg group-hover:bg-accent transition-colors">
+                <Utensils className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-base">Log Manually</p>
+                <p className="text-sm text-muted-foreground">Search for foods and add them to your log.</p>
+              </div>
+            </button>
           </DialogTrigger>
           <ManualLogDialog setOpen={setManualOpen} />
         </Dialog>
         <Dialog open={isAiOpen} onOpenChange={setAiOpen}>
           <DialogTrigger asChild>
-            <Button><Sparkles className="mr-2 h-4 w-4" /> Analyze with AI</Button>
+            <button className="group text-left p-4 border rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-4 w-full bg-primary/10 border-primary/20">
+              <div className="bg-primary/20 p-3 rounded-lg group-hover:bg-primary/30 transition-colors">
+                <Sparkles className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <p className="font-semibold text-base">Analyze with AI</p>
+                <p className="text-sm text-muted-foreground">Snap a photo and let AI do the work.</p>
+              </div>
+            </button>
           </DialogTrigger>
           <AiLogDialog setOpen={setAiOpen} />
         </Dialog>
