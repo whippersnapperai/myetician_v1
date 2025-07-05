@@ -23,6 +23,8 @@ import { calculateBMR, calculateTDEE, calculateCaloricGoal, calculateAge } from 
 import type { UserData } from '@/types';
 import { FormField, FormItem, FormControl, FormMessage, FormLabel } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { TriangleAlert } from 'lucide-react';
 
 const formSchema = z.object({
   user_first_name: z.string().min(1, 'Please enter your name.'),
@@ -578,8 +580,15 @@ const StepAuth = () => {
   const { saveUserData } = useUserData();
   const router = useRouter();
   const name = getValues('user_first_name');
-  const [isSigningIn, setIsSigningIn] = useState(true); // Start as true to handle redirect check
+  const [isSigningIn, setIsSigningIn] = useState(true);
+  const [origin, setOrigin] = useState('');
   const { toast } = useToast();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setOrigin(window.location.origin);
+    }
+  }, []);
 
   const handleFinalSubmit = async (user: User) => {
     const values = getValues();
@@ -615,23 +624,20 @@ const StepAuth = () => {
   };
 
   useEffect(() => {
-    if (!auth) {
-        setIsSigningIn(false);
-        return;
+    if (!isFirebaseConfigured || !auth) {
+      setIsSigningIn(false);
+      return;
     }
     
-    const checkRedirect = async () => {
-      try {
-        const result = await getRedirectResult(auth);
+    getRedirectResult(auth)
+      .then((result) => {
         if (result) {
-          // User is signed in. handleFinalSubmit will navigate away.
-          await handleFinalSubmit(result.user);
+          handleFinalSubmit(result.user);
         } else {
-          // No user from redirect, it's a normal page load.
           setIsSigningIn(false); 
         }
-      } catch (error: any) {
-        // If the redirect fails, it will throw here.
+      })
+      .catch((error) => {
         console.error("Google Sign-In Error (Redirect)", error);
         toast({
           variant: "destructive",
@@ -639,26 +645,20 @@ const StepAuth = () => {
           description: error.message || "Could not complete sign-in with Google.",
         });
         setIsSigningIn(false);
-      }
-    };
-    
-    checkRedirect();
-  }, []);
+      });
+  }, [auth, toast, saveUserData, router]);
 
   const handleGoogleSignIn = async () => {
-    setIsSigningIn(true);
     if (!isFirebaseConfigured || !auth) {
         toast({
             variant: "destructive",
             title: "Firebase Not Configured",
             description: "Please ensure your Firebase credentials are correct.",
         });
-        setIsSigningIn(false);
         return;
     }
+    setIsSigningIn(true);
     const provider = new GoogleAuthProvider();
-    // This will redirect the user to the Google sign-in page.
-    // After sign-in, they will be redirected back, and the useEffect will handle the result.
     await signInWithRedirect(auth, provider);
   };
 
@@ -675,6 +675,18 @@ const StepAuth = () => {
       <CardDescription>
         One last step. Create an account to save your progress and access your personalized plan.
       </CardDescription>
+
+      <Alert variant="destructive" className="mt-4">
+        <TriangleAlert className="h-4 w-4" />
+        <AlertTitle>Action Required!</AlertTitle>
+        <AlertDescription>
+          To enable sign-in, you must add the following domain to your Firebase project's list of authorized domains:
+          <br />
+          <code className="bg-muted p-1 rounded font-mono text-sm my-2 block">{origin || 'Loading...'}</code>
+          Go to Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized domains.
+        </AlertDescription>
+      </Alert>
+
       <div className="mt-6 space-y-4">
         <Button className="w-full" size="lg" onClick={handleGoogleSignIn} disabled={isSigningIn}>
            {isSigningIn ? (
