@@ -8,7 +8,9 @@ export interface UserDataContextType {
   loading: boolean;
   saveUserData: (data: UserData) => void;
   logMeal: (meal: Omit<Meal, 'id' | 'createdAt'>) => void;
-  todaysMeals: Meal[];
+  selectedDate: Date;
+  setSelectedDate: (date: Date) => void;
+  selectedDateMeals: Meal[];
   caloriesConsumed: number;
   macrosConsumed: { protein: number; carbohydrates: number; fat: number; };
   macrosGoal: { protein: number; carbohydrates: number; fat: number; };

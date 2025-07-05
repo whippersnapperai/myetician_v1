@@ -12,6 +12,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mealLog, setMealLog] = useState<DailyLog>({});
   const [loading, setLoading] = useState(true);
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
     try {
@@ -47,12 +48,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
       createdAt: new Date().toISOString(),
     };
     
-    const today = format(new Date(), 'yyyy-MM-dd');
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
 
     setMealLog(prevLog => {
       const updatedLog = { ...prevLog };
-      const todayMeals = updatedLog[today] ? [...updatedLog[today], newMeal] : [newMeal];
-      updatedLog[today] = todayMeals;
+      const dateMeals = updatedLog[dateKey] ? [...updatedLog[dateKey], newMeal] : [newMeal];
+      updatedLog[dateKey] = dateMeals;
 
       try {
         localStorage.setItem(MEAL_LOG_KEY, JSON.stringify(updatedLog));
@@ -62,13 +63,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
       return updatedLog;
     });
-  }, []);
+  }, [selectedDate]);
 
-  const todaysMeals = mealLog[format(new Date(), 'yyyy-MM-dd')] || [];
+  const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
+  const selectedDateMeals = mealLog[selectedDateString] || [];
 
-  const caloriesConsumed = todaysMeals.reduce((sum, meal) => sum + meal.calories, 0);
+  const caloriesConsumed = selectedDateMeals.reduce((sum, meal) => sum + meal.calories, 0);
 
-  const macrosConsumed = todaysMeals.reduce(
+  const macrosConsumed = selectedDateMeals.reduce(
     (totals, meal) => {
       totals.protein += meal.protein;
       totals.carbohydrates += meal.carbohydrates;
@@ -91,7 +93,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loading, 
     saveUserData, 
     logMeal,
-    todaysMeals,
+    selectedDate,
+    setSelectedDate,
+    selectedDateMeals,
     caloriesConsumed,
     macrosConsumed,
     macrosGoal,

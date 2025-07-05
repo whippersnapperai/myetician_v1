@@ -4,12 +4,22 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { UtensilsCrossed, Flame } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
+import { useUserData } from '@/hooks/use-user-data';
+import { isToday, format } from 'date-fns';
 
 interface MealListProps {
   meals: Meal[];
 }
 
 export default function MealList({ meals }: MealListProps) {
+  const { selectedDate } = useUserData();
+
+  const title = isToday(selectedDate)
+    ? "Today's Meals"
+    : `${format(selectedDate, 'eeee')}'s Meals`;
+
+  const descriptionDate = isToday(selectedDate) ? 'today' : `on ${format(selectedDate, 'MMM d')}`;
+
   const groupedMeals = meals.reduce((acc, meal) => {
     const type = meal.mealType || 'General';
     if (!acc[type]) {
@@ -28,9 +38,9 @@ export default function MealList({ meals }: MealListProps) {
   return (
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle>Today's Meals</CardTitle>
+        <CardTitle>{title}</CardTitle>
         <CardDescription>
-          {meals.length > 0 ? `You've logged ${meals.length} item(s) today.` : 'No meals logged yet today.'}
+          {meals.length > 0 ? `You've logged ${meals.length} item(s) ${descriptionDate}.` : `No meals logged yet ${descriptionDate}.`}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -38,7 +48,7 @@ export default function MealList({ meals }: MealListProps) {
           {meals.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-full text-center text-muted-foreground">
               <UtensilsCrossed className="w-16 h-16 mb-4" />
-              <p>Your logged meals will appear here.</p>
+              <p>Your logged meals for this day will appear here.</p>
             </div>
           ) : (
             <Accordion type="multiple" defaultValue={mealOrder} className="w-full">

@@ -1,15 +1,14 @@
 'use client';
 
-import { useState } from 'react';
+import { useUserData } from '@/hooks/use-user-data';
 import { Card, CardContent } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { format, addDays, subDays, isToday, isSameDay } from 'date-fns';
 
 export default function DashboardCalendar() {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const today = new Date();
+  const { selectedDate, setSelectedDate } = useUserData();
 
-  const week = Array.from({ length: 7 }, (_, i) => addDays(subDays(today, 3), i));
+  const week = Array.from({ length: 7 }, (_, i) => addDays(subDays(selectedDate, 3), i));
 
   return (
     <Card className="shadow-lg">

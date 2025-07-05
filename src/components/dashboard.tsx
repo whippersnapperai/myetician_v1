@@ -8,7 +8,7 @@ import Header from '@/components/header';
 import DashboardCalendar from './dashboard-calendar';
 
 export default function Dashboard() {
-  const { userData, todaysMeals, caloriesConsumed, macrosConsumed, macrosGoal } = useUserData();
+  const { userData, selectedDateMeals, caloriesConsumed, macrosConsumed, macrosGoal } = useUserData();
 
   if (!userData) return null;
 
@@ -29,7 +29,7 @@ export default function Dashboard() {
 
             <div className="space-y-8">
               <MealLogger />
-              <MealList meals={todaysMeals} />
+              <MealList meals={selectedDateMeals} />
             </div>
           </div>
         </div>
