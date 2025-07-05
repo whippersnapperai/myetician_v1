@@ -43,7 +43,7 @@ const formSchema = z.object({
 
 type OnboardingFormValues = z.infer<typeof formSchema>;
 
-const TOTAL_STEPS = 11;
+const TOTAL_STEPS = 8;
 
 export default function OnboardingFlow() {
   const [step, setStep] = useState(1);
@@ -72,12 +72,10 @@ export default function OnboardingFlow() {
       ['user_first_name'],
       ['user_goal'],
       ['user_current_activity_level'],
-      ['user_gender'],
-      ['dob_year', 'dob_month', 'dob_day'],
-      ['user_height', 'user_height_unit'],
-      ['user_current_weight', 'user_current_weight_unit'],
-      ['user_goal_weight', 'user_goal_weight_unit'],
+      ['user_gender', 'dob_year', 'dob_month', 'dob_day'],
+      ['user_height', 'user_height_unit', 'user_current_weight', 'user_current_weight_unit', 'user_goal_weight', 'user_goal_weight_unit'],
       ['user_caloric_goal_intensity_value'],
+      [],
       [],
     ][step] as (keyof OnboardingFormValues)[];
     
@@ -138,14 +136,11 @@ export default function OnboardingFlow() {
                 {step === 1 && <StepName />}
                 {step === 2 && <StepGoal />}
                 {step === 3 && <StepActivity />}
-                {step === 4 && <StepGender />}
-                {step === 5 && <StepDob />}
-                {step === 6 && <StepHeight />}
-                {step === 7 && <StepCurrentWeight />}
-                {step === 8 && <StepGoalWeight />}
-                {step === 9 && <StepIntensity />}
-                {step === 10 && <StepSummary setStep={setStep} />}
-                {step === 11 && <StepAuth onSubmit={methods.handleSubmit(handleSubmit)} />}
+                {step === 4 && <StepBio />}
+                {step === 5 && <StepMeasurements />}
+                {step === 6 && <StepIntensity />}
+                {step === 7 && <StepSummary setStep={setStep} />}
+                {step === 8 && <StepAuth onSubmit={methods.handleSubmit(handleSubmit)} />}
             </form>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -177,7 +172,7 @@ const StepGoal = () => {
     const options = ['Build muscle', 'Maintain weight', 'Lose weight'];
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your primary goal, {name}?</CardTitle>
+        <CardTitle className="mb-2 font-headline">What's your primary goal?</CardTitle>
         <CardDescription>This helps us tailor your daily targets.</CardDescription>
         <FormField
           control={control}
@@ -219,7 +214,7 @@ const StepActivity = () => {
     ];
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your activity level?</CardTitle>
+        <CardTitle className="mb-2 font-headline">Describe your activity level</CardTitle>
         <CardDescription>This is crucial for estimating your daily calorie needs.</CardDescription>
         <FormField
           control={control}
@@ -253,49 +248,7 @@ const StepActivity = () => {
     );
 };
 
-
-const StepGender = () => {
-    const { control } = useFormContext<OnboardingFormValues>();
-    return (
-      <div>
-        <CardTitle className="mb-2 font-headline">What's your gender?</CardTitle>
-        <CardDescription>Biological sex is used to calculate your metabolic rate.</CardDescription>
-        <FormField
-          control={control}
-          name="user_gender"
-          render={({ field }) => (
-            <FormItem className="mt-6">
-              <RadioGroup
-                onValueChange={field.onChange}
-                defaultValue={field.value}
-                className="grid grid-cols-2 gap-4"
-              >
-                  <FormItem>
-                    <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
-                      <FormControl>
-                          <RadioGroupItem value="male" />
-                      </FormControl>
-                      <span>Male</span>
-                    </Label>
-                  </FormItem>
-                  <FormItem>
-                      <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
-                          <FormControl>
-                              <RadioGroupItem value="female" />
-                          </FormControl>
-                          <span>Female</span>
-                      </Label>
-                  </FormItem>
-              </RadioGroup>
-              <FormMessage className="mt-2" />
-            </FormItem>
-          )}
-        />
-      </div>
-    );
-};
-
-const StepDob = () => {
+const StepBio = () => {
     const { control, formState: { errors } } = useFormContext<OnboardingFormValues>();
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 100 }, (_, i) => currentYear - i - 16);
@@ -303,196 +256,221 @@ const StepDob = () => {
     const days = Array.from({ length: 31 }, (_, i) => `${i + 1}`.padStart(2, '0'));
 
     return (
-      <div>
-        <CardTitle className="mb-2 font-headline">What's your date of birth?</CardTitle>
-        <CardDescription>Your age helps us make more accurate calculations.</CardDescription>
-        <div className="mt-6 grid grid-cols-3 gap-4">
-          <FormField
-            control={control}
-            name="dob_year"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>{years.map(y => <SelectItem key={y} value={`${y}`}>{y}</SelectItem>)}</SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={control}
-            name="dob_month"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={control}
-            name="dob_day"
-            render={({ field }) => (
-              <FormItem>
-                <Select onValueChange={field.onChange} defaultValue={field.value}>
-                  <FormControl>
-                    <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
-                  </FormControl>
-                  <SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
-                </Select>
-              </FormItem>
-            )}
-          />
+        <div>
+            <CardTitle className="mb-2 font-headline">Tell us about yourself</CardTitle>
+            <CardDescription>This information helps us make more accurate calculations for your goals.</CardDescription>
+            <div className="mt-6 space-y-6">
+                <div>
+                    <FormLabel>Gender</FormLabel>
+                    <FormField
+                    control={control}
+                    name="user_gender"
+                    render={({ field }) => (
+                        <FormItem className="mt-2">
+                        <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="grid grid-cols-2 gap-4"
+                        >
+                            <FormItem>
+                                <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
+                                <FormControl>
+                                    <RadioGroupItem value="male" />
+                                </FormControl>
+                                <span>Male</span>
+                                </Label>
+                            </FormItem>
+                            <FormItem>
+                                <Label className="flex items-center justify-center space-x-3 p-4 border rounded-md has-[:checked]:bg-primary/10 has-[:checked]:border-primary cursor-pointer">
+                                <FormControl>
+                                    <RadioGroupItem value="female" />
+                                </FormControl>
+                                <span>Female</span>
+                                </Label>
+                            </FormItem>
+                        </RadioGroup>
+                        <FormMessage className="mt-2" />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+                
+                <div>
+                    <FormLabel>Date of Birth</FormLabel>
+                    <div className="mt-2 grid grid-cols-3 gap-4">
+                        <FormField
+                            control={control}
+                            name="dob_year"
+                            render={({ field }) => (
+                            <FormItem>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Year" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>{years.map(y => <SelectItem key={y} value={`${y}`}>{y}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={control}
+                            name="dob_month"
+                            render={({ field }) => (
+                            <FormItem>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Month" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>{months.map(m => <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={control}
+                            name="dob_day"
+                            render={({ field }) => (
+                            <FormItem>
+                                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Day" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>{days.map(d => <SelectItem key={d} value={d}>{d}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </FormItem>
+                            )}
+                        />
+                    </div>
+                    {(errors.dob_year || errors.dob_month || errors.dob_day) && <p className="text-destructive text-sm mt-1">Please select a valid date.</p>}
+                </div>
+            </div>
         </div>
-        {(errors.dob_year || errors.dob_month || errors.dob_day) && <p className="text-destructive text-sm mt-1">Please select a valid date.</p>}
-      </div>
     );
 };
 
-const StepHeight = () => {
+const StepMeasurements = () => {
     const { control } = useFormContext<OnboardingFormValues>();
     return (
-      <div>
-        <CardTitle className="mb-2 font-headline">What's your height?</CardTitle>
-         <div className="mt-6 flex items-start gap-2">
-            <FormField
-              control={control}
-              name="user_height"
-              render={({ field }) => (
-                <FormItem className="flex-grow">
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 180"
-                      {...field}
-                      onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="user_height_unit"
-              render={({ field }) => (
-                <FormItem>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                            <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            <SelectItem value="cm">cm</SelectItem>
-                            <SelectItem value="ft">ft</SelectItem>
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-              )}
-            />
+        <div>
+            <CardTitle className="mb-2 font-headline">Your Measurements</CardTitle>
+            <CardDescription>Provide your height and weight to help us calculate your needs.</CardDescription>
+            <div className="mt-6 space-y-6">
+                <FormField
+                    control={control}
+                    name="user_height"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Height</FormLabel>
+                        <div className="flex items-start gap-2">
+                            <FormControl>
+                                <Input
+                                    type="number"
+                                    placeholder="e.g. 180"
+                                    {...field}
+                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                    value={field.value ?? ''}
+                                />
+                            </FormControl>
+                            <FormField
+                            control={control}
+                            name="user_height_unit"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                                        <FormControl>
+                                            <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                                        </FormControl>
+                                        <SelectContent>
+                                            <SelectItem value="cm">cm</SelectItem>
+                                            <SelectItem value="ft">ft</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </FormItem>
+                            )}
+                            />
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={control}
+                    name="user_current_weight"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Current Weight</FormLabel>
+                        <div className="flex items-start gap-2">
+                            <FormControl>
+                                <Input
+                                    type="number"
+                                    placeholder="e.g. 75"
+                                    {...field}
+                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                    value={field.value ?? ''}
+                                />
+                            </FormControl>
+                            <FormField
+                                control={control}
+                                name="user_current_weight_unit"
+                                render={({ field: selectField }) => (
+                                    <FormItem>
+                                        <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="kg">kg</SelectItem>
+                                                <SelectItem value="lbs">lbs</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                <FormField
+                    control={control}
+                    name="user_goal_weight"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Goal Weight</FormLabel>
+                        <div className="flex items-start gap-2">
+                            <FormControl>
+                                <Input
+                                    type="number"
+                                    placeholder="e.g. 70"
+                                    {...field}
+                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
+                                    value={field.value ?? ''}
+                                />
+                            </FormControl>
+                            <FormField
+                                control={control}
+                                name="user_goal_weight_unit"
+                                render={({ field: selectField }) => (
+                                    <FormItem>
+                                        <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
+                                            <FormControl>
+                                                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                <SelectItem value="kg">kg</SelectItem>
+                                                <SelectItem value="lbs">lbs</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </FormItem>
+                                )}
+                            />
+                        </div>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
         </div>
-      </div>
-    );
-};
-
-const StepCurrentWeight = () => {
-    const { control } = useFormContext<OnboardingFormValues>();
-    return (
-      <div>
-        <CardTitle className="mb-2 font-headline">What's your current weight?</CardTitle>
-         <div className="mt-6 flex items-start gap-2">
-            <FormField
-              control={control}
-              name="user_current_weight"
-              render={({ field }) => (
-                <FormItem className="flex-grow">
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 75"
-                       {...field}
-                      onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="user_current_weight_unit"
-              render={({ field }) => (
-                <FormItem>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                          <SelectItem value="kg">kg</SelectItem>
-                          <SelectItem value="lbs">lbs</SelectItem>
-                      </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
-      </div>
-    );
-};
-
-const StepGoalWeight = () => {
-    const { control } = useFormContext<OnboardingFormValues>();
-    return (
-      <div>
-        <CardTitle className="mb-2 font-headline">And your goal weight?</CardTitle>
-         <div className="mt-6 flex items-start gap-2">
-            <FormField
-              control={control}
-              name="user_goal_weight"
-              render={({ field }) => (
-                <FormItem className="flex-grow">
-                  <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="e.g. 70"
-                       {...field}
-                      onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                      value={field.value ?? ''}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={control}
-              name="user_goal_weight_unit"
-              render={({ field }) => (
-                <FormItem>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                          <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                          <SelectItem value="kg">kg</SelectItem>
-                          <SelectItem value="lbs">lbs</SelectItem>
-                      </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-        </div>
-      </div>
     );
 };
 
@@ -508,19 +486,19 @@ const StepIntensity = () => {
 
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">Set your pace</CardTitle>
+        <CardTitle className="mb-2 font-headline">Personalize your plan</CardTitle>
         <CardDescription>
           {goal === 'Maintain weight'
-            ? "You've chosen to maintain your weight. This setting has no effect."
-            : `How aggressively do you want to pursue your goal?`}
+            ? "You've chosen to maintain your weight, so no adjustments are needed."
+            : `How aggressively do you want to pursue your goal? A higher percentage means faster results.`}
         </CardDescription>
-         <div className="mt-8">
+         <div className="mt-8 pt-4">
             <FormField
               control={control}
               name="user_caloric_goal_intensity_value"
               render={({ field }) => (
                 <FormItem>
-                  <Label className="flex justify-between"><span>{label}</span><span className="font-bold text-primary">{field.value}%</span></Label>
+                  <FormLabel className="flex justify-between"><span>{label}</span><span className="font-bold text-primary">{field.value}%</span></FormLabel>
                   <FormControl>
                     <Slider
                       value={[field.value]}
@@ -555,21 +533,18 @@ const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
         { label: 'Goal', value: values.user_goal, step: 2 },
         { label: 'Activity Level', value: values.user_current_activity_level, step: 3 },
         { label: 'Gender', value: values.user_gender, step: 4 },
-        { label: 'Date of Birth', value: `${dob_month}/${dob_day}/${dob_year}`, step: 5 },
-        { label: 'Height', value: `${values.user_height} ${values.user_height_unit}`, step: 6 },
-        { label: 'Current Weight', value: `${values.user_current_weight} ${values.user_current_weight_unit}`, step: 7 },
-        { label: 'Goal Weight', value: `${values.user_goal_weight} ${values.user_goal_weight_unit}`, step: 8 },
-        { label: 'Intensity', value: values.user_goal === 'Maintain weight' ? 'N/A' : `${values.user_caloric_goal_intensity_value}%`, step: 9 },
+        { label: 'Date of Birth', value: `${dob_month}/${dob_day}/${dob_year}`, step: 4 },
+        { label: 'Height', value: `${values.user_height} ${values.user_height_unit}`, step: 5 },
+        { label: 'Current Weight', value: `${values.user_current_weight} ${values.user_current_weight_unit}`, step: 5 },
+        { label: 'Goal Weight', value: `${values.user_goal_weight} ${values.user_goal_weight_unit}`, step: 5 },
+        { label: 'Intensity', value: values.user_goal === 'Maintain weight' ? 'N/A' : `${values.user_caloric_goal_intensity_value}%`, step: 6 },
     ];
     
     return (
         <div>
             <CardTitle className="mb-2 font-headline">Review Your Information</CardTitle>
             <CardDescription>
-                {isEditing
-                    ? "Click the pencil icon to edit an item, then click 'Next' when you're done."
-                    : 'Please confirm your details below before creating your account.'
-                }
+                Please confirm your details below. If anything is incorrect, you can edit it before creating your account.
             </CardDescription>
             <div className="mt-6 space-y-3">
                 {summaryItems.map(item => (
