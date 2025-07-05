@@ -587,14 +587,7 @@ const StepAuth = () => {
   const router = useRouter();
   const name = getValues('user_first_name');
   const [isSigningIn, setIsSigningIn] = useState(true);
-  const [origin, setOrigin] = useState('');
   const { toast } = useToast();
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      setOrigin(window.location.origin);
-    }
-  }, []);
 
   const handleFinalSubmit = async (user: User) => {
     const values = getValues();
@@ -681,17 +674,6 @@ const StepAuth = () => {
       <CardDescription>
         One last step. Create an account to save your progress and access your personalized plan.
       </CardDescription>
-
-      <Alert variant="destructive" className="mt-4">
-        <TriangleAlert className="h-4 w-4" />
-        <AlertTitle>Action Required!</AlertTitle>
-        <AlertDescription>
-          To enable sign-in, you must add the following domain to your Firebase project's list of authorized domains:
-          <br />
-          <code className="bg-muted p-1 rounded font-mono text-sm my-2 block">{origin || 'Loading...'}</code>
-          Go to Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized domains.
-        </AlertDescription>
-      </Alert>
 
       <div className="mt-6 space-y-4">
         <Button className="w-full" size="lg" onClick={handleGoogleSignIn} disabled={isSigningIn}>
