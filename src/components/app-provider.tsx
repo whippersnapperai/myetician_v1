@@ -77,6 +77,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     },
     { protein: 0, carbohydrates: 0, fat: 0 }
   );
+  
+  const macrosGoal = {
+    protein: userData ? (userData.user_caloric_goal * 0.30) / 4 : 0,
+    carbohydrates: userData ? (userData.user_caloric_goal * 0.40) / 4 : 0,
+    fat: userData ? (userData.user_caloric_goal * 0.30) / 9 : 0,
+  };
+
 
   const value: UserDataContextType = { 
     userData, 
@@ -87,6 +94,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     todaysMeals,
     caloriesConsumed,
     macrosConsumed,
+    macrosGoal,
   };
 
   return (

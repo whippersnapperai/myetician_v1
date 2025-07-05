@@ -11,6 +11,7 @@ export interface UserDataContextType {
   todaysMeals: Meal[];
   caloriesConsumed: number;
   macrosConsumed: { protein: number; carbohydrates: number; fat: number; };
+  macrosGoal: { protein: number; carbohydrates: number; fat: number; };
 }
 
 export const UserDataContext = createContext<UserDataContextType | undefined>(undefined);
