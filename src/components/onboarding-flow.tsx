@@ -546,6 +546,7 @@ const StepIntensity = () => {
 
 const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
     const { getValues } = useFormContext<OnboardingFormValues>();
+    const [isEditing, setIsEditing] = useState(false);
     const values = getValues();
     const { dob_day, dob_month, dob_year } = values;
 
@@ -564,7 +565,12 @@ const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
     return (
         <div>
             <CardTitle className="mb-2 font-headline">Review Your Information</CardTitle>
-            <CardDescription>Please confirm your details below before creating your account. You can edit any section.</CardDescription>
+            <CardDescription>
+                {isEditing
+                    ? "Click the pencil icon to edit an item, then click 'Next' when you're done."
+                    : 'Please confirm your details below before creating your account.'
+                }
+            </CardDescription>
             <div className="mt-6 space-y-3">
                 {summaryItems.map(item => (
                     <div key={item.label} className="flex items-center justify-between p-3 rounded-md border bg-muted/50">
@@ -572,13 +578,22 @@ const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
                             <p className="text-sm text-muted-foreground">{item.label}</p>
                             <p className="font-semibold capitalize">{item.value}</p>
                         </div>
-                        <Button type="button" variant="ghost" size="icon" onClick={() => setStep(item.step)}>
-                            <Pencil className="h-4 w-4" />
-                            <span className="sr-only">Edit {item.label}</span>
-                        </Button>
+                        {isEditing && item.label !== 'Name' && (
+                            <Button type="button" variant="ghost" size="icon" onClick={() => setStep(item.step)}>
+                                <Pencil className="h-4 w-4" />
+                                <span className="sr-only">Edit {item.label}</span>
+                            </Button>
+                        )}
                     </div>
                 ))}
             </div>
+             {!isEditing && (
+                <div className="mt-6 flex justify-end">
+                    <Button type="button" variant="outline" onClick={() => setIsEditing(true)}>
+                        Edit Details
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
