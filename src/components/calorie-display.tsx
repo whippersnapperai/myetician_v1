@@ -1,5 +1,8 @@
 'use client';
-import { PieChart, Pie, Cell, ResponsiveContainer, Label } from 'recharts';
+import { ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { Button } from './ui/button';
+import { Dumbbell } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 interface CalorieDisplayProps {
   goal: number;
@@ -9,59 +12,44 @@ interface CalorieDisplayProps {
 export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) {
   const remaining = Math.max(0, goal - consumed);
   const percentage = goal > 0 ? (consumed / goal) * 100 : 0;
-  
-  const data = [
-    { name: 'Consumed', value: consumed },
-    { name: 'Remaining', value: remaining },
-  ];
-
-  const COLORS = ['hsl(var(--primary))', 'hsl(var(--muted))'];
+  const data = [{ name: 'consumed', value: percentage }];
 
   return (
-    <div className="relative flex flex-col items-center justify-center">
-      <div className="w-52 h-52">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
+    <Card className="shadow-lg bg-[hsl(var(--chart-4))] dark:bg-card text-foreground">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-xl font-bold">Calories Left</CardTitle>
+        <Button variant="ghost" size="icon">
+          <Dumbbell className="w-6 h-6" />
+        </Button>
+      </CardHeader>
+      <CardContent className="flex justify-center items-center p-0">
+        <div className="relative w-64 h-64">
+          <ResponsiveContainer width="100%" height="100%">
+            <RadialBarChart
+              innerRadius="70%"
+              outerRadius="85%"
+              barSize={15}
               data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={80}
               startAngle={90}
-              endAngle={450}
-              paddingAngle={0}
-              dataKey="value"
-              stroke="none"
+              endAngle={-270}
             >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-              ))}
-              <Label
-                  content={({ viewBox }) => {
-                    if (viewBox) {
-                      const { cx, cy } = viewBox;
-                      return (
-                        <g>
-                          <text x={cx} y={cy ? cy - 5 : 0} textAnchor="middle" dominantBaseline="middle" className="text-3xl font-bold fill-foreground">
-                            {Math.round(remaining)}
-                          </text>
-                           <text x={cx} y={cy ? cy + 18 : 0} textAnchor="middle" dominantBaseline="middle" className="text-sm fill-muted-foreground">
-                            Remaining
-                          </text>
-                        </g>
-                      );
-                    }
-                    return null;
-                  }}
+              <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+              <RadialBar
+                background={{ fill: 'hsla(var(--card-foreground), 0.1)' }}
+                dataKey="value"
+                cornerRadius={10}
+                fill="hsl(var(--card-foreground))"
               />
-            </Pie>
-          </PieChart>
-        </ResponsiveContainer>
-      </div>
-      <div className="text-center mt-2">
-         <p className="text-sm text-muted-foreground">Goal: {Math.round(goal)} Cal</p>
-      </div>
-    </div>
+            </RadialBarChart>
+          </ResponsiveContainer>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+             <span className="text-5xl font-bold tracking-tighter">
+              {Math.round(remaining)}
+            </span>
+            <span className="text-sm text-muted-foreground mt-1">kcal left</span>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
   );
 }
