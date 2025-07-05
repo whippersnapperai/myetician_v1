@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, FormProvider, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -314,123 +314,157 @@ const StepBio = () => {
 };
 
 const StepMeasurements = () => {
-    const { control } = useFormContext<OnboardingFormValues>();
+    const { control, watch } = useFormContext<OnboardingFormValues>();
+    
+    const heightUnit = watch('user_height_unit');
+    const currentWeightUnit = watch('user_current_weight_unit');
+    const goalWeightUnit = watch('user_goal_weight_unit');
+
+    const heightConfigs = {
+        cm: { min: 120, max: 220, step: 1, default: 170 },
+        ft: { min: 4, max: 8, step: 0.1, default: 5.5 },
+    };
+    const weightConfigs = {
+        kg: { min: 30, max: 180, step: 0.5, default: 70 },
+        lbs: { min: 65, max: 400, step: 1, default: 150 },
+    };
+
     return (
         <div>
             <CardTitle className="mb-2 font-headline">Your Measurements</CardTitle>
-            <CardDescription>Provide your height and weight to help us calculate your needs.</CardDescription>
-            <div className="mt-6 space-y-6">
+            <CardDescription>Use the sliders to provide your measurements.</CardDescription>
+            <div className="mt-6 space-y-8 pt-4">
                 <FormField
                     control={control}
                     name="user_height"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Height</FormLabel>
-                        <div className="flex items-start gap-2">
-                            <FormControl>
-                                <Input
-                                    type="number"
-                                    placeholder="e.g. 180"
-                                    {...field}
-                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                                    value={field.value ?? ''}
+                            <div className="flex justify-between items-baseline">
+                                <FormLabel>Height</FormLabel>
+                                <span className="text-lg font-bold text-primary tabular-nums">
+                                    {(field.value || 0).toFixed(heightUnit === 'ft' ? 1 : 0)} {heightUnit}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <FormControl>
+                                    <Slider
+                                        min={heightConfigs[heightUnit].min}
+                                        max={heightConfigs[heightUnit].max}
+                                        step={heightConfigs[heightUnit].step}
+                                        value={[field.value || heightConfigs[heightUnit].default]}
+                                        onValueChange={(value) => field.onChange(value[0])}
+                                        className="flex-1"
+                                    />
+                                </FormControl>
+                                <FormField
+                                    control={control}
+                                    name="user_height_unit"
+                                    render={({ field: selectField }) => (
+                                        <FormItem>
+                                            <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="cm">cm</SelectItem>
+                                                    <SelectItem value="ft">ft</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )}
                                 />
-                            </FormControl>
-                            <FormField
-                            control={control}
-                            name="user_height_unit"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                                        <FormControl>
-                                            <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="cm">cm</SelectItem>
-                                            <SelectItem value="ft">ft</SelectItem>
-                                        </SelectContent>
-                                    </Select>
-                                </FormItem>
-                            )}
-                            />
-                        </div>
-                        <FormMessage />
+                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
+                
                 <FormField
                     control={control}
                     name="user_current_weight"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Current Weight</FormLabel>
-                        <div className="flex items-start gap-2">
-                            <FormControl>
-                                <Input
-                                    type="number"
-                                    placeholder="e.g. 75"
-                                    {...field}
-                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                                    value={field.value ?? ''}
+                             <div className="flex justify-between items-baseline">
+                                <FormLabel>Current Weight</FormLabel>
+                                <span className="text-lg font-bold text-primary tabular-nums">
+                                    {(field.value || 0).toFixed(currentWeightUnit === 'kg' ? 1 : 0)} {currentWeightUnit}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <FormControl>
+                                    <Slider
+                                        min={weightConfigs[currentWeightUnit].min}
+                                        max={weightConfigs[currentWeightUnit].max}
+                                        step={weightConfigs[currentWeightUnit].step}
+                                        value={[field.value || weightConfigs[currentWeightUnit].default]}
+                                        onValueChange={(value) => field.onChange(value[0])}
+                                        className="flex-1"
+                                    />
+                                </FormControl>
+                                <FormField
+                                    control={control}
+                                    name="user_current_weight_unit"
+                                    render={({ field: selectField }) => (
+                                        <FormItem>
+                                            <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="kg">kg</SelectItem>
+                                                    <SelectItem value="lbs">lbs</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )}
                                 />
-                            </FormControl>
-                            <FormField
-                                control={control}
-                                name="user_current_weight_unit"
-                                render={({ field: selectField }) => (
-                                    <FormItem>
-                                        <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="kg">kg</SelectItem>
-                                                <SelectItem value="lbs">lbs</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <FormMessage />
+                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
+
                 <FormField
                     control={control}
                     name="user_goal_weight"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Goal Weight</FormLabel>
-                        <div className="flex items-start gap-2">
-                            <FormControl>
-                                <Input
-                                    type="number"
-                                    placeholder="e.g. 70"
-                                    {...field}
-                                    onChange={e => field.onChange(e.target.value === '' ? undefined : Number(e.target.value))}
-                                    value={field.value ?? ''}
+                             <div className="flex justify-between items-baseline">
+                                <FormLabel>Goal Weight</FormLabel>
+                                <span className="text-lg font-bold text-primary tabular-nums">
+                                    {(field.value || 0).toFixed(goalWeightUnit === 'kg' ? 1 : 0)} {goalWeightUnit}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                                <FormControl>
+                                    <Slider
+                                        min={weightConfigs[goalWeightUnit].min}
+                                        max={weightConfigs[goalWeightUnit].max}
+                                        step={weightConfigs[goalWeightUnit].step}
+                                        value={[field.value || weightConfigs[goalWeightUnit].default]}
+                                        onValueChange={(value) => field.onChange(value[0])}
+                                        className="flex-1"
+                                    />
+                                </FormControl>
+                                <FormField
+                                    control={control}
+                                    name="user_goal_weight_unit"
+                                    render={({ field: selectField }) => (
+                                        <FormItem>
+                                            <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
+                                                <FormControl>
+                                                    <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
+                                                </FormControl>
+                                                <SelectContent>
+                                                    <SelectItem value="kg">kg</SelectItem>
+                                                    <SelectItem value="lbs">lbs</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </FormItem>
+                                    )}
                                 />
-                            </FormControl>
-                            <FormField
-                                control={control}
-                                name="user_goal_weight_unit"
-                                render={({ field: selectField }) => (
-                                    <FormItem>
-                                        <Select onValueChange={selectField.onChange} defaultValue={selectField.value}>
-                                            <FormControl>
-                                                <SelectTrigger className="w-[100px]"><SelectValue /></SelectTrigger>
-                                            </FormControl>
-                                            <SelectContent>
-                                                <SelectItem value="kg">kg</SelectItem>
-                                                <SelectItem value="lbs">lbs</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </FormItem>
-                                )}
-                            />
-                        </div>
-                        <FormMessage />
+                            </div>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
