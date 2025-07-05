@@ -3,28 +3,32 @@ import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
 // --- Firebase Configuration ---
-// This object contains the credentials for your Firebase project.
-// It's crucial that these values exactly match the ones in your
-// Firebase project's settings to ensure a secure and successful connection.
+// The configuration object below is a placeholder. You must replace it
+// with your project's actual Firebase configuration to connect the app.
 const firebaseConfig = {
-  apiKey: "AIzaSyAUFUIhPIVJfBbliM8YiYMX1jbRrq4l3_w",
-  authDomain: "studio.firebase.google.com",
-  projectId: "project-594504357737",
-  storageBucket: "project-594504357737.appspot.com",
-  messagingSenderId: "594504357737",
-  appId: "1:594504357737:web:e98ac2c7957b2ff21ccff8",
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_AUTH_DOMAIN",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_STORAGE_BUCKET",
+  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+  appId: "YOUR_APP_ID",
 };
 
-// --- Firebase Initialization ---
-// We initialize the Firebase app, auth, and database instances here.
-// This logic ensures that Firebase is only initialized once, preventing
-// errors that can occur from re-initialization on hot reloads.
-const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-const auth: Auth = getAuth(app);
-const db: Firestore = getFirestore(app);
+// Check if the configuration has been filled out
+export const isFirebaseConfigured = firebaseConfig.apiKey !== "YOUR_API_KEY";
 
-// We hardcode this to true because the configuration is now baked into the code.
-// This satisfies other parts of the app that check this flag.
-export const isFirebaseConfigured = true;
+// --- Firebase Initialization ---
+// This logic ensures that Firebase is only initialized once if configured.
+let app: FirebaseApp;
+let auth: Auth | undefined = undefined;
+let db: Firestore | undefined = undefined;
+
+if (isFirebaseConfigured) {
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+} else {
+    console.log("Firebase is not configured. Please add your credentials to src/lib/firebase.ts");
+}
 
 export { app, auth, db };

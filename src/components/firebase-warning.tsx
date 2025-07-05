@@ -10,7 +10,7 @@ export default function FirebaseWarning() {
             <TriangleAlert className="h-4 w-4" />
             <AlertTitle>Firebase Not Configured</AlertTitle>
             <AlertDescription>
-                Your app is in offline mode. Please add your Firebase credentials to the <code>.env</code> file to enable database features.
+                Your app is in offline mode. Please add your Firebase credentials to the <code>src/lib/firebase.ts</code> file to enable database features.
             </AlertDescription>
         </Alert>
     </div>
