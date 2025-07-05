@@ -8,7 +8,7 @@ export interface UserDataContextType {
   userData: UserData | null;
   mealLog: DailyLog;
   loading: boolean;
-  saveUserData: (data: UserData) => Promise<void>;
+  saveUserData: (data: UserData, userOverride?: User) => Promise<void>;
   logMeal: (meal: Omit<Meal, 'id' | 'createdAt' | 'date'>) => Promise<void>;
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;

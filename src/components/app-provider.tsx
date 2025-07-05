@@ -69,14 +69,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user, selectedDate]);
 
-  const saveUserData = useCallback(async (data: UserData) => {
-    if (!user || !isFirebaseConfigured || !db) {
+  const saveUserData = useCallback(async (data: UserData, userOverride?: User) => {
+    const userToSave = userOverride || user;
+    if (!userToSave || !isFirebaseConfigured || !db) {
       toast({ variant: 'destructive', title: 'Offline Mode', description: 'Cannot save data. Please configure Firebase.' });
       setUserData(data);
       return;
     }
     try {
-      await setDoc(doc(db, 'users', user.uid), data);
+      await setDoc(doc(db, 'users', userToSave.uid), data);
       setUserData(data);
     } catch (error) {
       console.error("Failed to save user data to Firestore", error);

@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Mail, Loader2, Pencil } from 'lucide-react';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, type User } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -47,9 +47,6 @@ const TOTAL_STEPS = 8;
 
 export default function OnboardingFlow() {
   const [step, setStep] = useState(1);
-  const router = useRouter();
-  const { saveUserData } = useUserData();
-
   const methods = useForm<OnboardingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -89,38 +86,6 @@ export default function OnboardingFlow() {
 
   const handleBack = () => setStep(s => s - 1);
 
-  const handleSubmit = async (values: OnboardingFormValues) => {
-    const activityFactors = {
-      'Sedentary': 1.2,
-      'Lightly active': 1.375,
-      'Moderately active': 1.55,
-      'Very active': 1.725,
-      'Extremely active': 1.9
-    };
-    
-    const dob = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
-    const partialUserData = {
-        ...values,
-        user_dob: dob,
-        user_age: calculateAge(dob),
-        user_activity_factor_value: activityFactors[values.user_current_activity_level],
-    };
-
-    const bmr = calculateBMR(partialUserData);
-    const tdee = calculateTDEE(bmr, partialUserData.user_activity_factor_value);
-    const caloricGoal = calculateCaloricGoal(tdee, values.user_goal, values.user_caloric_goal_intensity_value);
-
-    const completeUserData: UserData = {
-        ...partialUserData,
-        user_calculated_bmr: bmr,
-        user_calculated_tdee: tdee,
-        user_caloric_goal: caloricGoal,
-    };
-    
-    await saveUserData(completeUserData);
-    router.push('/');
-  };
-
   return (
     <FormProvider {...methods}>
       <Card className="w-full max-w-2xl shadow-2xl">
@@ -140,11 +105,11 @@ export default function OnboardingFlow() {
                 {step === 5 && <StepMeasurements />}
                 {step === 6 && <StepIntensity />}
                 {step === 7 && <StepSummary setStep={setStep} />}
-                {step === 8 && <StepAuth onSubmit={methods.handleSubmit(handleSubmit)} />}
+                {step === 8 && <StepAuth />}
             </form>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline" onClick={handleBack} disabled={step === 1}>Back</Button>
+          <Button variant="outline" onClick={handleBack} disabled={step === 1 || step === TOTAL_STEPS}>Back</Button>
           {step < TOTAL_STEPS && <Button onClick={handleNext}>Next</Button>}
         </CardFooter>
       </Card>
@@ -574,11 +539,46 @@ const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
 };
 
 
-const StepAuth = ({ onSubmit }: { onSubmit: () => Promise<void> }) => {
+const StepAuth = () => {
   const { getValues } = useFormContext<OnboardingFormValues>();
+  const { saveUserData } = useUserData();
+  const router = useRouter();
   const name = getValues('user_first_name');
   const [isSigningIn, setIsSigningIn] = useState(false);
   const { toast } = useToast();
+
+  const handleFinalSubmit = async (user: User) => {
+    const values = getValues();
+    const activityFactors = {
+      'Sedentary': 1.2,
+      'Lightly active': 1.375,
+      'Moderately active': 1.55,
+      'Very active': 1.725,
+      'Extremely active': 1.9
+    };
+    
+    const dob = `${values.dob_year}-${values.dob_month}-${values.dob_day}`;
+    const partialUserData = {
+        ...values,
+        user_dob: dob,
+        user_age: calculateAge(dob),
+        user_activity_factor_value: activityFactors[values.user_current_activity_level],
+    };
+
+    const bmr = calculateBMR(partialUserData);
+    const tdee = calculateTDEE(bmr, partialUserData.user_activity_factor_value);
+    const caloricGoal = calculateCaloricGoal(tdee, values.user_goal, values.user_caloric_goal_intensity_value);
+
+    const completeUserData: UserData = {
+        ...partialUserData,
+        user_calculated_bmr: bmr,
+        user_calculated_tdee: tdee,
+        user_caloric_goal: caloricGoal,
+    };
+    
+    await saveUserData(completeUserData, user);
+    router.push('/');
+  }
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true);
@@ -593,8 +593,8 @@ const StepAuth = ({ onSubmit }: { onSubmit: () => Promise<void> }) => {
     }
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      await onSubmit();
+      const result = await signInWithPopup(auth, provider);
+      await handleFinalSubmit(result.user);
     } catch (error: any) {
       console.error("Google Sign-In Error", error);
       toast({
