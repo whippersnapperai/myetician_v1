@@ -1,8 +1,11 @@
-
 import { initializeApp, getApps, getApp, type FirebaseApp } from "firebase/app";
 import { getAuth, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
+// --- Firebase Configuration ---
+// This object contains the credentials for your Firebase project.
+// It's crucial that these values exactly match the ones in your
+// Firebase project's settings to ensure a secure and successful connection.
 const firebaseConfig = {
   apiKey: "AIzaSyAUFUIhPIVJfBbliM8YiYMX1jbRrq4l3_w",
   authDomain: "project-594504357737.firebaseapp.com",
@@ -12,24 +15,16 @@ const firebaseConfig = {
   appId: "1:594504357737:web:e98ac2c7957b2ff21ccff8",
 };
 
-export const isFirebaseConfigured =
-  !!firebaseConfig.apiKey &&
-  !!firebaseConfig.authDomain &&
-  !!firebaseConfig.projectId &&
-  !firebaseConfig.apiKey.includes("PASTE_YOUR");
+// --- Firebase Initialization ---
+// We initialize the Firebase app, auth, and database instances here.
+// This logic ensures that Firebase is only initialized once, preventing
+// errors that can occur from re-initialization on hot reloads.
+const app: FirebaseApp = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const auth: Auth = getAuth(app);
+const db: Firestore = getFirestore(app);
 
-let app: FirebaseApp | null = null;
-let auth: Auth | null = null;
-let db: Firestore | null = null;
-
-if (isFirebaseConfigured) {
-  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
-  auth = getAuth(app);
-  db = getFirestore(app);
-} else if (typeof window === 'undefined') {
-  console.warn(
-    "Firebase configuration is missing or incomplete. The app will run in a limited, offline mode. Please check your .env file and make sure all NEXT_PUBLIC_FIREBASE_* variables are set correctly with values from your Firebase project console."
-  );
-}
+// We hardcode this to true because the configuration is now baked into the code.
+// This satisfies other parts of the app that check this flag.
+export const isFirebaseConfigured = true;
 
 export { app, auth, db };
