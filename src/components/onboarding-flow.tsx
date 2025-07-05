@@ -5,6 +5,7 @@ import { useForm, FormProvider, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
+import { Mail } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +39,7 @@ const formSchema = z.object({
 
 type OnboardingFormValues = z.infer<typeof formSchema>;
 
-const TOTAL_STEPS = 9;
+const TOTAL_STEPS = 10;
 
 export default function OnboardingFlow() {
   const [step, setStep] = useState(1);
@@ -59,7 +60,7 @@ export default function OnboardingFlow() {
     },
   });
 
-  const { trigger, getValues } = methods;
+  const { trigger } = methods;
 
   const handleNext = async () => {
     const fields: (keyof OnboardingFormValues)[] = [
@@ -77,9 +78,7 @@ export default function OnboardingFlow() {
     
     const isValid = await trigger(fields);
     if (isValid) {
-      if (step === TOTAL_STEPS) {
-        handleSubmit();
-      } else {
+      if (step < TOTAL_STEPS) {
         setStep(s => s + 1);
       }
     }
@@ -87,8 +86,7 @@ export default function OnboardingFlow() {
 
   const handleBack = () => setStep(s => s - 1);
 
-  const handleSubmit = () => {
-    const values = getValues();
+  const handleSubmit = (values: OnboardingFormValues) => {
     const activityFactors = {
       'Sedentary': 1.2,
       'Lightly active': 1.375,
@@ -131,7 +129,7 @@ export default function OnboardingFlow() {
           <Progress value={(step / TOTAL_STEPS) * 100} className="w-full" />
         </CardHeader>
         <CardContent className="min-h-[300px] flex flex-col justify-center">
-            <form onSubmit={methods.handleSubmit(handleSubmit)}>
+            <form>
                 {step === 1 && <StepName />}
                 {step === 2 && <StepGoal />}
                 {step === 3 && <StepActivity />}
@@ -141,11 +139,12 @@ export default function OnboardingFlow() {
                 {step === 7 && <StepCurrentWeight />}
                 {step === 8 && <StepGoalWeight />}
                 {step === 9 && <StepIntensity />}
+                {step === 10 && <StepAuth onSubmit={methods.handleSubmit(handleSubmit)} />}
             </form>
         </CardContent>
         <CardFooter className="flex justify-between">
           <Button variant="outline" onClick={handleBack} disabled={step === 1}>Back</Button>
-          <Button onClick={handleNext}>{step === TOTAL_STEPS ? 'Finish' : 'Next'}</Button>
+          {step < TOTAL_STEPS && <Button onClick={handleNext}>Next</Button>}
         </CardFooter>
       </Card>
     </FormProvider>
@@ -167,11 +166,12 @@ const StepName = () => {
 };
 
 const StepGoal = () => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     const options = ['Build muscle', 'Maintain weight', 'Lose weight'];
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your primary goal?</CardTitle>
+        <CardTitle className="mb-2 font-headline">What's your primary goal, {name}?</CardTitle>
         <CardDescription>This helps us tailor your daily targets.</CardDescription>
         <FormField
           control={control}
@@ -203,7 +203,8 @@ const StepGoal = () => {
 };
 
 const StepActivity = () => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     const options = [
         { value: 'Sedentary', label: 'Sedentary', desc: 'Little or no exercise' },
         { value: 'Lightly active', label: 'Lightly Active', desc: 'Light exercise 1-3 days/week' },
@@ -213,7 +214,7 @@ const StepActivity = () => {
     ];
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">Describe your activity level.</CardTitle>
+        <CardTitle className="mb-2 font-headline">Great. Now, what's your activity level, {name}?</CardTitle>
         <CardDescription>This is crucial for estimating your daily calorie needs.</CardDescription>
         <FormField
           control={control}
@@ -249,10 +250,11 @@ const StepActivity = () => {
 
 
 const StepGender = () => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your gender?</CardTitle>
+        <CardTitle className="mb-2 font-headline">What's your gender, {name}?</CardTitle>
         <CardDescription>Biological sex is used to calculate your metabolic rate.</CardDescription>
         <FormField
           control={control}
@@ -290,7 +292,8 @@ const StepGender = () => {
 };
 
 const StepDob = () => {
-    const { control, formState: { errors } } = useFormContext();
+    const { control, formState: { errors }, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     const currentYear = new Date().getFullYear();
     const years = Array.from({ length: 100 }, (_, i) => currentYear - i - 16);
     const months = Array.from({ length: 12 }, (_, i) => ({ value: `${i + 1}`.padStart(2, '0'), label: new Date(0, i).toLocaleString('default', { month: 'long' }) }));
@@ -298,7 +301,7 @@ const StepDob = () => {
 
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your date of birth?</CardTitle>
+        <CardTitle className="mb-2 font-headline">What's your date of birth, {name}?</CardTitle>
         <CardDescription>Your age helps us make more accurate calculations.</CardDescription>
         <div className="mt-6 grid grid-cols-3 gap-4">
           <FormField
@@ -350,10 +353,11 @@ const StepDob = () => {
 };
 
 const StepHeight = () => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your height?</CardTitle>
+        <CardTitle className="mb-2 font-headline">What's your height, {name}?</CardTitle>
          <div className="mt-6 flex items-start gap-2">
             <FormField
               control={control}
@@ -397,10 +401,11 @@ const StepHeight = () => {
 };
 
 const StepCurrentWeight = () => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your current weight?</CardTitle>
+        <CardTitle className="mb-2 font-headline">What's your current weight, {name}?</CardTitle>
          <div className="mt-6 flex items-start gap-2">
             <FormField
               control={control}
@@ -444,10 +449,11 @@ const StepCurrentWeight = () => {
 };
 
 const StepGoalWeight = () => {
-    const { control } = useFormContext();
+    const { control, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">What's your goal weight?</CardTitle>
+        <CardTitle className="mb-2 font-headline">And your goal weight, {name}?</CardTitle>
          <div className="mt-6 flex items-start gap-2">
             <FormField
               control={control}
@@ -491,7 +497,8 @@ const StepGoalWeight = () => {
 };
 
 const StepIntensity = () => {
-    const { control, watch } = useFormContext();
+    const { control, watch, getValues } = useFormContext<OnboardingFormValues>();
+    const name = getValues('user_first_name');
     const goal = watch('user_goal');
     let label;
     switch (goal) {
@@ -502,7 +509,7 @@ const StepIntensity = () => {
 
     return (
       <div>
-        <CardTitle className="mb-2 font-headline">Set your pace</CardTitle>
+        <CardTitle className="mb-2 font-headline">Set your pace, {name}</CardTitle>
         <CardDescription>
           {goal === 'Maintain weight' 
             ? 'You\'ve chosen to maintain your weight. This setting has no effect.' 
@@ -536,4 +543,37 @@ const StepIntensity = () => {
          </div>
       </div>
     );
+};
+
+const StepAuth = ({ onSubmit }: { onSubmit: () => void }) => {
+  const { getValues } = useFormContext<OnboardingFormValues>();
+  const name = getValues('user_first_name');
+
+  return (
+    <div>
+      <CardTitle className="mb-2 font-headline">You're all set, {name}!</CardTitle>
+      <CardDescription>
+        One last step. Create an account to save your progress and access your personalized plan.
+      </CardDescription>
+      <div className="mt-6 space-y-4">
+        <Button className="w-full" size="lg" onClick={onSubmit}>
+          <svg className="mr-2 h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
+            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
+            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05" />
+            <path d="M12 5.16c1.56 0 2.95.54 4.04 1.58l3.15-3.15C17.45 1.99 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.54 6.16-4.54z" fill="#EA4335" />
+            <path d="M1 1h22v22H1z" fill="none"/>
+          </svg>
+          Sign up with Google
+        </Button>
+        <Button className="w-full" variant="secondary" size="lg" onClick={onSubmit}>
+            <Mail className="mr-2 h-5 w-5" />
+            Sign up with Email
+        </Button>
+      </div>
+       <p className="mt-4 text-center text-xs text-muted-foreground">
+        By signing up, you agree to our Terms of Service.
+      </p>
+    </div>
+  );
 };
