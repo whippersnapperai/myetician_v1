@@ -2,62 +2,39 @@
 
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Calendar as CalendarIcon, ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
-import { DayPicker } from 'react-day-picker';
 import { cn } from '@/lib/utils';
-import { buttonVariants } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { format, addDays, subDays, isToday, isSameDay } from 'date-fns';
 
 export default function DashboardCalendar() {
-  const [date, setDate] = useState<Date>(new Date());
+  const [selectedDate, setSelectedDate] = useState(new Date());
+  const today = new Date();
+
+  const week = Array.from({ length: 7 }, (_, i) => addDays(subDays(today, 3), i));
 
   return (
     <Card className="shadow-lg">
       <CardContent className="p-3">
-        <DayPicker
-          mode="single"
-          selected={date}
-          onSelect={(d) => d && setDate(d)}
-          showOutsideDays={false}
-          classNames={{
-            month: 'space-y-4',
-            caption: 'flex justify-center pt-1 relative items-center mb-2',
-            caption_label: 'text-lg font-semibold',
-            nav: 'space-x-1 flex items-center',
-            nav_button: cn(
-              buttonVariants({ variant: 'outline' }),
-              'h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100'
-            ),
-            nav_button_previous: 'absolute left-1',
-            nav_button_next: 'absolute right-1',
-            table: 'w-full border-collapse space-y-1',
-            head_row: 'flex',
-            head_cell:
-              'text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]',
-            row: 'flex w-full mt-2',
-            cell: 'h-9 w-9 text-center text-sm p-0 relative',
-            day: cn(
-              buttonVariants({ variant: 'ghost' }),
-              'h-9 w-9 p-0 font-normal rounded-full aria-selected:opacity-100'
-            ),
-            day_selected:
-              'bg-foreground text-background hover:bg-foreground focus:bg-foreground',
-            day_today: 'bg-accent text-accent-foreground rounded-full',
-            day_outside: 'invisible',
-            day_disabled: 'text-muted-foreground opacity-50',
-          }}
-          components={{
-            CaptionLabel: ({ displayMonth }) => (
-              <div className="flex items-center gap-1 cursor-pointer">
-                <CalendarIcon className="h-5 w-5 text-muted-foreground" />
-                {format(displayMonth, 'MMMM')}
-                <ChevronDown className="h-4 w-4 text-muted-foreground" />
-              </div>
-            ),
-            IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-            IconRight: () => <ChevronRight className="h-4 w-4" />,
-          }}
-        />
+        <div className="flex justify-between items-center gap-1">
+            {week.map((day) => (
+            <button
+                key={day.toISOString()}
+                onClick={() => setSelectedDate(day)}
+                className={cn(
+                'flex flex-col items-center justify-center w-full aspect-square rounded-lg transition-colors duration-200 focus:outline-none text-center p-1',
+                {
+                    'bg-primary text-primary-foreground shadow-md': isSameDay(day, selectedDate),
+                    'hover:bg-accent/50': !isSameDay(day, selectedDate),
+                }
+                )}
+            >
+                <span className="text-xs uppercase opacity-75">{format(day, 'EEE')}</span>
+                <span className="text-2xl font-bold">{format(day, 'd')}</span>
+                 {isToday(day) && !isSameDay(day, selectedDate) && (
+                    <div className="w-1.5 h-1.5 bg-primary rounded-full mt-1" />
+                )}
+            </button>
+            ))}
+        </div>
       </CardContent>
     </Card>
   );
