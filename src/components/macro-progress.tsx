@@ -1,8 +1,7 @@
 'use client';
-
-import { Card, CardContent } from '@/components/ui/card';
-import { Zap, Flame, Leaf } from 'lucide-react';
-import { Progress } from './ui/progress';
+import { ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Beef, Wheat, CookingPot } from 'lucide-react';
 
 interface MacroProgressProps {
   consumed: { protein: number; carbohydrates: number; fat: number; };
@@ -13,26 +12,53 @@ interface MacroCardProps {
   name: string;
   consumed: number;
   goal: number;
-  colorClass: string;
+  color: string;
   icon: React.ReactNode;
 }
 
-const MacroCard = ({ name, consumed, goal, colorClass, icon }: MacroCardProps) => {
+const MacroCard = ({ name, consumed, goal, color, icon }: MacroCardProps) => {
   const percentage = goal > 0 ? Math.min(100, (consumed / goal) * 100) : 0;
+  const data = [{ name: 'consumed', value: percentage }];
   
   return (
-    <Card className={`shadow-lg ${colorClass} text-card-foreground dark:text-[hsl(222.2,47.4%,11.2%)] h-full`}>
-      <CardContent className="p-3 flex flex-col justify-between h-full space-y-2">
-        <div className="flex justify-between items-center">
-            <h3 className="text-sm font-semibold">{name}</h3>
-            {icon}
+    <Card className="shadow-lg h-full flex flex-col">
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-base font-medium">{name}</CardTitle>
+        {icon}
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col items-center justify-center p-0 pb-4">
+        <div className="relative w-28 h-28">
+            <ResponsiveContainer width="100%" height="100%">
+                <RadialBarChart
+                innerRadius="80%"
+                outerRadius="100%"
+                barSize={10}
+                data={data}
+                startAngle={90}
+                endAngle={-270}
+                >
+                <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
+                <RadialBar
+                    background={{ fill: 'hsl(var(--muted))' }}
+                    dataKey="value"
+                    cornerRadius={10}
+                    style={{ fill: `hsl(${color})` }}
+                />
+                </RadialBarChart>
+            </ResponsiveContainer>
+             <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                <span className="text-xl font-bold tracking-tighter" style={{ color: `hsl(${color})` }}>
+                    {Math.round(consumed)}g
+                </span>
+                <span className="text-xs text-muted-foreground -mt-1">
+                    Consumed
+                </span>
+            </div>
         </div>
-        <div className="space-y-1">
-          <Progress value={percentage} className="h-1.5 bg-black/10" indicatorClassName="bg-black/40" />
-           <div className="flex justify-between items-baseline text-xs">
-              <span>{Math.round(consumed)}g consumed</span>
-              <span>{Math.round(Math.max(0, goal - consumed))}g left</span>
-          </div>
+        <div className="text-center mt-2 px-2">
+          <p className="text-xs text-muted-foreground">
+            Goal: {Math.round(goal)}g
+          </p>
         </div>
       </CardContent>
     </Card>
@@ -45,34 +71,34 @@ export default function MacroProgress({ consumed, goal }: MacroProgressProps) {
       name: 'Protein',
       consumed: consumed.protein,
       goal: goal.protein,
-      colorClass: 'bg-[hsl(var(--chart-1))]',
-      icon: <Zap className="w-4 h-4" />
+      color: 'var(--chart-1)',
+      icon: <Beef className="w-5 h-5" style={{ color: 'hsl(var(--chart-1))' }} />
     },
     {
       name: 'Carbs',
       consumed: consumed.carbohydrates,
       goal: goal.carbohydrates,
-      colorClass: 'bg-[hsl(var(--chart-2))]',
-      icon: <Flame className="w-4 h-4" />
+      color: 'var(--chart-2)',
+      icon: <Wheat className="w-5 h-5" style={{ color: 'hsl(var(--chart-2))' }} />
     },
     {
       name: 'Fat',
       consumed: consumed.fat,
       goal: goal.fat,
-      colorClass: 'bg-[hsl(var(--chart-3))]',
-      icon: <Leaf className="w-4 h-4" />
+      color: 'var(--chart-3)',
+      icon: <CookingPot className="w-5 h-5" style={{ color: 'hsl(var(--chart-3))' }} />
     }
   ];
 
   return (
-    <div className="grid grid-cols-3 gap-4 h-full">
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 h-full">
       {macroData.map(macro => (
         <MacroCard 
             key={macro.name}
             name={macro.name}
             consumed={macro.consumed}
             goal={macro.goal}
-            colorClass={macro.colorClass}
+            color={macro.color}
             icon={macro.icon}
         />
       ))}
