@@ -1,6 +1,6 @@
 'use client';
 import { ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
-import { Flame } from 'lucide-react';
+import { Droplet } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
 interface CalorieDisplayProps {
@@ -18,7 +18,7 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
     <Card className="shadow-lg h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-base font-medium">Calories</CardTitle>
-        <Flame className="w-5 h-5" style={{ color: `hsl(${color})` }} />
+        <Droplet className="w-5 h-5" style={{ color: `hsl(${color})` }} />
       </CardHeader>
       <CardContent className="flex-1 flex flex-col items-center justify-center p-0 pb-4">
         <div className="relative w-40 h-40 sm:w-48 sm:h-48">
