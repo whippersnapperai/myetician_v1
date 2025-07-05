@@ -48,16 +48,22 @@ type OnboardingFormValues = z.infer<typeof formSchema>;
 const TOTAL_STEPS = 8;
 
 export default function OnboardingFlow() {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(8);
   const methods = useForm<OnboardingFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      user_first_name: '',
+      user_first_name: 'Test User',
       user_goal: 'Maintain weight',
       user_current_activity_level: 'Lightly active',
       user_gender: 'male',
+      dob_year: '1990',
+      dob_month: '01',
+      dob_day: '01',
+      user_height: 170,
       user_height_unit: 'cm',
+      user_current_weight: 70,
       user_current_weight_unit: 'kg',
+      user_goal_weight: 70,
       user_goal_weight_unit: 'kg',
       user_caloric_goal_intensity_value: 20,
     },
