@@ -27,12 +27,10 @@ if (isFirebaseConfigured) {
   app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
   auth = getAuth(app);
   db = getFirestore(app);
-} else {
-  if (typeof window === 'undefined') {
-    console.warn(
-      "Firebase configuration is missing or incomplete. The app will run in a limited, offline mode. Please check your .env file and make sure all NEXT_PUBLIC_FIREBASE_* variables are set correctly with values from your Firebase project console."
-    );
-  }
+} else if (typeof window === 'undefined') {
+  console.warn(
+    "Firebase configuration is missing or incomplete. The app will run in a limited, offline mode. Please check your .env file and make sure all NEXT_PUBLIC_FIREBASE_* variables are set correctly with values from your Firebase project console."
+  );
 }
 
 export { app, auth, db };
