@@ -2,6 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Zap, Flame, Leaf } from 'lucide-react';
+import { Progress } from './ui/progress';
 
 interface MacroProgressProps {
   consumed: { protein: number; carbohydrates: number; fat: number; };
@@ -16,17 +17,22 @@ interface MacroCardProps {
   icon: React.ReactNode;
 }
 
-const MacroCard = ({ name, consumed, colorClass, icon }: MacroCardProps) => {
+const MacroCard = ({ name, consumed, goal, colorClass, icon }: MacroCardProps) => {
+  const percentage = goal > 0 ? Math.min(100, (consumed / goal) * 100) : 0;
+  
   return (
     <Card className={`shadow-lg ${colorClass} text-card-foreground dark:text-[hsl(222.2,47.4%,11.2%)] h-full`}>
-      <CardContent className="p-3 flex flex-col justify-between h-full">
+      <CardContent className="p-3 flex flex-col justify-between h-full space-y-2">
         <div className="flex justify-between items-center">
             <h3 className="text-sm font-semibold">{name}</h3>
             {icon}
         </div>
-        <div>
-            <span className="text-xl font-bold">{Math.round(consumed)}</span>
-            <span className="text-xs ml-1">gram</span>
+        <div className="space-y-1">
+          <Progress value={percentage} className="h-1.5 bg-black/10" indicatorClassName="bg-black/40" />
+           <div className="flex justify-between items-baseline text-xs">
+              <span>{Math.round(consumed)}g consumed</span>
+              <span>{Math.round(Math.max(0, goal - consumed))}g left</span>
+          </div>
         </div>
       </CardContent>
     </Card>

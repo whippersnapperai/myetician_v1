@@ -41,10 +41,12 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
           </ResponsiveContainer>
           <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
              <span className="text-3xl font-bold tracking-tighter">
-              {Math.round(remaining)}
+              {Math.round(consumed)}
             </span>
-            <span className="text-xs text-muted-foreground -mt-1 dark:text-[hsl(215.4,16.3%,46.9%)]">kcal left</span>
-            <span className="text-xs text-muted-foreground mt-2 dark:text-[hsl(215.4,16.3%,46.9%)]">Goal: {Math.round(goal)}</span>
+            <span className="text-xs text-muted-foreground -mt-1 dark:text-[hsl(215.4,16.3%,46.9%)]">kcal consumed</span>
+            <span className="text-xs text-muted-foreground mt-2 dark:text-[hsl(215.4,16.3%,46.9%)]">
+                {Math.round(remaining)} left of {Math.round(goal)}
+            </span>
           </div>
         </div>
       </CardContent>
