@@ -8,7 +8,7 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 // Firebase project's settings to ensure a secure and successful connection.
 const firebaseConfig = {
   apiKey: "AIzaSyAUFUIhPIVJfBbliM8YiYMX1jbRrq4l3_w",
-  authDomain: "project-594504357737.firebaseapp.com",
+  authDomain: "studio.firebase.google.com",
   projectId: "project-594504357737",
   storageBucket: "project-594504357737.appspot.com",
   messagingSenderId: "594504357737",
