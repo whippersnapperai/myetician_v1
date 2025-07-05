@@ -1,19 +1,35 @@
 'use client';
 
+import { useState } from 'react';
 import { useUserData } from '@/hooks/use-user-data';
 import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { format, addDays, subDays, isToday, isSameDay } from 'date-fns';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export default function DashboardCalendar() {
   const { selectedDate, setSelectedDate } = useUserData();
+  const [centerDate, setCenterDate] = useState(new Date());
 
-  const week = Array.from({ length: 7 }, (_, i) => addDays(subDays(selectedDate, 3), i));
+  const week = Array.from({ length: 7 }, (_, i) => addDays(subDays(centerDate, 3), i));
+
+  const handlePrevDay = () => {
+    setCenterDate(d => subDays(d, 1));
+  };
+
+  const handleNextDay = () => {
+    setCenterDate(d => addDays(d, 1));
+  };
 
   return (
     <Card className="shadow-lg">
       <CardContent className="p-3">
-        <div className="flex justify-between items-center gap-1">
+        <div className="flex justify-between items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={handlePrevDay} className="shrink-0">
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex justify-between items-center gap-1 w-full">
             {week.map((day) => (
             <button
                 key={day.toISOString()}
@@ -33,6 +49,10 @@ export default function DashboardCalendar() {
                 )}
             </button>
             ))}
+          </div>
+          <Button variant="ghost" size="icon" onClick={handleNextDay} className="shrink-0">
+            <ChevronRight className="w-5 h-5" />
+          </Button>
         </div>
       </CardContent>
     </Card>

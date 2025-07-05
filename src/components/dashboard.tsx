@@ -25,11 +25,11 @@ export default function Dashboard() {
                 consumed={caloriesConsumed}
               />
               <MacroProgress consumed={macrosConsumed} goal={macrosGoal} />
+              <MealList meals={selectedDateMeals} />
             </div>
 
             <div className="space-y-8">
               <MealLogger />
-              <MealList meals={selectedDateMeals} />
             </div>
           </div>
         </div>

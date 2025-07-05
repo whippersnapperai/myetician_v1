@@ -1,6 +1,5 @@
 'use client';
 import { ResponsiveContainer, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
-import { Button } from './ui/button';
 import { Dumbbell } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
@@ -17,18 +16,16 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
   return (
     <Card className="shadow-lg bg-[hsl(var(--chart-4))] text-foreground dark:text-[hsl(222.2,47.4%,11.2%)]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-xl font-bold">Calories Left</CardTitle>
-        <Button variant="ghost" size="icon">
-          <Dumbbell className="w-6 h-6" />
-        </Button>
+        <CardTitle className="text-lg font-bold">Calories</CardTitle>
+        <Dumbbell className="w-5 h-5" />
       </CardHeader>
       <CardContent className="flex justify-center items-center p-0">
-        <div className="relative w-64 h-64">
+        <div className="relative w-52 h-52">
           <ResponsiveContainer width="100%" height="100%">
             <RadialBarChart
               innerRadius="70%"
               outerRadius="85%"
-              barSize={15}
+              barSize={12}
               data={data}
               startAngle={90}
               endAngle={-270}
@@ -42,11 +39,12 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
               />
             </RadialBarChart>
           </ResponsiveContainer>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-             <span className="text-5xl font-bold tracking-tighter">
+          <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+             <span className="text-4xl font-bold tracking-tighter">
               {Math.round(remaining)}
             </span>
-            <span className="text-sm text-muted-foreground mt-1 dark:text-[hsl(215.4,16.3%,46.9%)]">kcal left</span>
+            <span className="text-sm text-muted-foreground -mt-1 dark:text-[hsl(215.4,16.3%,46.9%)]">kcal left</span>
+            <span className="text-xs text-muted-foreground mt-2 dark:text-[hsl(215.4,16.3%,46.9%)]">Goal: {Math.round(goal)}</span>
           </div>
         </div>
       </CardContent>
