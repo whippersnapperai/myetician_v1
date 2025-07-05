@@ -6,7 +6,7 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 const firebaseConfig = {
   apiKey: "AIzaSyAUFUIhPIVJfBbliM8YiYMX1jbRrq4l3_w",
   authDomain: "myetician.firebaseapp.com",
-  projectId: "myetician",
+  projectId: "project-594504357737",
   storageBucket: "myetician.appspot.com",
   messagingSenderId: "594504357737",
   appId: "1:594504357737:web:e98ac2c7957b2ff21ccff8"
