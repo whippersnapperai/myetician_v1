@@ -4,6 +4,7 @@ import "./globals.css";
 import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import { AppProvider } from "@/components/app-provider";
+import { ThemeProvider } from "@/components/theme-provider";
 
 const fontPoppins = Poppins({
   subsets: ["latin"],
@@ -41,9 +42,16 @@ export default function RootLayout({
           fontPtSans.variable
         )}
       >
-        <AppProvider>
-          {children}
-        </AppProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <AppProvider>
+            {children}
+          </AppProvider>
+        </ThemeProvider>
         <Toaster />
       </body>
     </html>
