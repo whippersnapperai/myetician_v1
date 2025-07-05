@@ -6,7 +6,7 @@ import { useForm, FormProvider, useFormContext } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
-import { Mail, Loader2 } from 'lucide-react';
+import { Mail, Loader2, Pencil } from 'lucide-react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 
@@ -43,7 +43,7 @@ const formSchema = z.object({
 
 type OnboardingFormValues = z.infer<typeof formSchema>;
 
-const TOTAL_STEPS = 10;
+const TOTAL_STEPS = 11;
 
 export default function OnboardingFlow() {
   const [step, setStep] = useState(1);
@@ -78,6 +78,7 @@ export default function OnboardingFlow() {
       ['user_current_weight', 'user_current_weight_unit'],
       ['user_goal_weight', 'user_goal_weight_unit'],
       ['user_caloric_goal_intensity_value'],
+      [],
     ][step] as (keyof OnboardingFormValues)[];
     
     const isValid = await trigger(fields);
@@ -143,7 +144,8 @@ export default function OnboardingFlow() {
                 {step === 7 && <StepCurrentWeight />}
                 {step === 8 && <StepGoalWeight />}
                 {step === 9 && <StepIntensity />}
-                {step === 10 && <StepAuth onSubmit={methods.handleSubmit(handleSubmit)} />}
+                {step === 10 && <StepSummary setStep={setStep} />}
+                {step === 11 && <StepAuth onSubmit={methods.handleSubmit(handleSubmit)} />}
             </form>
         </CardContent>
         <CardFooter className="flex justify-between">
@@ -541,6 +543,46 @@ const StepIntensity = () => {
       </div>
     );
 };
+
+const StepSummary = ({ setStep }: { setStep: (step: number) => void }) => {
+    const { getValues } = useFormContext<OnboardingFormValues>();
+    const values = getValues();
+    const { dob_day, dob_month, dob_year } = values;
+
+    const summaryItems = [
+        { label: 'Name', value: values.user_first_name, step: 1 },
+        { label: 'Goal', value: values.user_goal, step: 2 },
+        { label: 'Activity Level', value: values.user_current_activity_level, step: 3 },
+        { label: 'Gender', value: values.user_gender, step: 4 },
+        { label: 'Date of Birth', value: `${dob_month}/${dob_day}/${dob_year}`, step: 5 },
+        { label: 'Height', value: `${values.user_height} ${values.user_height_unit}`, step: 6 },
+        { label: 'Current Weight', value: `${values.user_current_weight} ${values.user_current_weight_unit}`, step: 7 },
+        { label: 'Goal Weight', value: `${values.user_goal_weight} ${values.user_goal_weight_unit}`, step: 8 },
+        { label: 'Intensity', value: values.user_goal === 'Maintain weight' ? 'N/A' : `${values.user_caloric_goal_intensity_value}%`, step: 9 },
+    ];
+    
+    return (
+        <div>
+            <CardTitle className="mb-2 font-headline">Review Your Information</CardTitle>
+            <CardDescription>Please confirm your details below before creating your account. You can edit any section.</CardDescription>
+            <div className="mt-6 space-y-3">
+                {summaryItems.map(item => (
+                    <div key={item.label} className="flex items-center justify-between p-3 rounded-md border bg-muted/50">
+                        <div>
+                            <p className="text-sm text-muted-foreground">{item.label}</p>
+                            <p className="font-semibold capitalize">{item.value}</p>
+                        </div>
+                        <Button type="button" variant="ghost" size="icon" onClick={() => setStep(item.step)}>
+                            <Pencil className="h-4 w-4" />
+                            <span className="sr-only">Edit {item.label}</span>
+                        </Button>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+};
+
 
 const StepAuth = ({ onSubmit }: { onSubmit: () => Promise<void> }) => {
   const { getValues } = useFormContext<OnboardingFormValues>();
