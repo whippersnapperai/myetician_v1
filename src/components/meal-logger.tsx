@@ -38,31 +38,26 @@ export default function MealLogger() {
       <CardHeader>
         <CardTitle>Log Your Meal</CardTitle>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-4">
+      <CardContent className="grid grid-cols-2 gap-4">
         <Dialog open={isManualOpen} onOpenChange={setManualOpen}>
           <DialogTrigger asChild>
-            <button className="group text-left p-4 border rounded-lg hover:bg-muted/50 transition-colors flex items-center gap-4 w-full">
-              <div className="bg-accent/50 p-3 rounded-lg group-hover:bg-accent transition-colors">
-                <Utensils className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-base">Log Manually</p>
-                <p className="text-sm text-muted-foreground">Search for foods and add them to your log.</p>
-              </div>
+            <button className="group relative text-center p-6 border rounded-lg hover:bg-muted/50 transition-colors w-full h-40 flex flex-col justify-center items-center overflow-hidden">
+              <Utensils className="w-10 h-10 text-primary mb-3 transition-transform group-hover:scale-110" />
+              <p className="font-semibold text-lg">Manual Log</p>
+              <p className="text-xs text-muted-foreground mt-1">Search & add items</p>
             </button>
           </DialogTrigger>
           <ManualLogDialog setOpen={setManualOpen} />
         </Dialog>
         <Dialog open={isAiOpen} onOpenChange={setAiOpen}>
           <DialogTrigger asChild>
-            <button className="group text-left p-4 border rounded-lg hover:bg-primary/20 transition-colors flex items-center gap-4 w-full bg-primary/10 border-primary/20">
-              <div className="bg-primary/20 p-3 rounded-lg group-hover:bg-primary/30 transition-colors">
-                <Sparkles className="w-6 h-6 text-primary" />
-              </div>
-              <div className="flex-1">
-                <p className="font-semibold text-base">Analyze with AI</p>
-                <p className="text-sm text-muted-foreground">Snap a photo and let AI do the work.</p>
-              </div>
+            <button className="group relative text-center p-6 border-2 border-primary/50 rounded-lg hover:bg-primary/10 transition-colors w-full h-40 flex flex-col justify-center items-center overflow-hidden bg-primary/5">
+              <Sparkles className="absolute -top-2 -right-2 w-8 h-8 text-primary/70 opacity-50 transition-all duration-300 group-hover:rotate-45" />
+              <Sparkles className="absolute top-10 left-2 w-4 h-4 text-primary/70 opacity-30 transition-all duration-300 group-hover:rotate-12" />
+              <Sparkles className="absolute bottom-1 right-8 w-5 h-5 text-primary/70 opacity-40 transition-all duration-300 group-hover:-rotate-45" />
+              <Camera className="w-10 h-10 text-primary mb-3 transition-transform group-hover:scale-110" />
+              <p className="font-semibold text-lg">AI Scan</p>
+              <p className="text-xs text-muted-foreground mt-1">From a photo</p>
             </button>
           </DialogTrigger>
           <AiLogDialog setOpen={setAiOpen} />
