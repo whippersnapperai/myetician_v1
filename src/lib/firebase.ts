@@ -6,12 +6,13 @@ import { getFirestore, type Firestore } from "firebase/firestore";
 // The configuration object below is a placeholder. You must replace it
 // with your project's actual Firebase configuration to connect the app.
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_AUTH_DOMAIN",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_STORAGE_BUCKET",
-  messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-  appId: "YOUR_APP_ID",
+  apiKey: "AIzaSyAUFUIhPIVJfBbliM8YiYMX1jbRrq4l3_w",
+  authDomain: "myetician.firebaseapp.com",
+  databaseURL: "https://myetician-default-rtdb.firebaseio.com",
+  projectId: "myetician",
+  storageBucket: "myetician.firebasestorage.app",
+  messagingSenderId: "594504357737",
+  appId: "1:594504357737:web:e98ac2c7957b2ff21ccff8"
 };
 
 // Check if the configuration has been filled out

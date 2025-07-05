@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Mail, Loader2, Pencil } from 'lucide-react';
-import { GoogleAuthProvider, signInWithPopup, type User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, type User } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -578,7 +578,7 @@ const StepAuth = () => {
   const { saveUserData } = useUserData();
   const router = useRouter();
   const name = getValues('user_first_name');
-  const [isSigningIn, setIsSigningIn] = useState(false);
+  const [isSigningIn, setIsSigningIn] = useState(true); // Start as true to handle redirect check
   const { toast } = useToast();
 
   const handleFinalSubmit = async (user: User) => {
@@ -612,7 +612,38 @@ const StepAuth = () => {
     
     await saveUserData(completeUserData, user);
     router.push('/');
-  }
+  };
+
+  useEffect(() => {
+    if (!auth) {
+        setIsSigningIn(false);
+        return;
+    }
+    
+    const checkRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (result) {
+          // User is signed in. handleFinalSubmit will navigate away.
+          await handleFinalSubmit(result.user);
+        } else {
+          // No user from redirect, it's a normal page load.
+          setIsSigningIn(false); 
+        }
+      } catch (error: any) {
+        // If the redirect fails, it will throw here.
+        console.error("Google Sign-In Error (Redirect)", error);
+        toast({
+          variant: "destructive",
+          title: "Sign-in failed",
+          description: error.message || "Could not complete sign-in with Google.",
+        });
+        setIsSigningIn(false);
+      }
+    };
+    
+    checkRedirect();
+  }, []);
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true);
@@ -620,25 +651,15 @@ const StepAuth = () => {
         toast({
             variant: "destructive",
             title: "Firebase Not Configured",
-            description: "Cannot sign in. Please configure Firebase credentials in .env file.",
+            description: "Please ensure your Firebase credentials are correct.",
         });
         setIsSigningIn(false);
         return;
     }
-    try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      await handleFinalSubmit(result.user);
-    } catch (error: any) {
-      console.error("Google Sign-In Error", error);
-      toast({
-        variant: "destructive",
-        title: "Sign-in failed",
-        description: error.message || "Could not sign in with Google. Please try again.",
-      });
-    } finally {
-      setIsSigningIn(false);
-    }
+    const provider = new GoogleAuthProvider();
+    // This will redirect the user to the Google sign-in page.
+    // After sign-in, they will be redirected back, and the useEffect will handle the result.
+    await signInWithRedirect(auth, provider);
   };
 
   const handleEmailSignIn = () => {
