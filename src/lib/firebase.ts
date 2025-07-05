@@ -10,7 +10,6 @@ const firebaseConfig = {
   storageBucket: "project-594504357737.appspot.com",
   messagingSenderId: "594504357737",
   appId: "1:594504357737:web:e98ac2c7957b2ff21ccff8",
-  databaseURL: "https://project-594504357737-default-rtdb.firebaseio.com"
 };
 
 export const isFirebaseConfigured =
