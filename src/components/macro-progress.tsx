@@ -18,7 +18,7 @@ interface MacroCardProps {
 
 const MacroCard = ({ name, consumed, colorClass, icon }: MacroCardProps) => {
   return (
-    <Card className={`shadow-lg ${colorClass} dark:bg-card text-card-foreground`}>
+    <Card className={`shadow-lg ${colorClass} text-card-foreground dark:text-[hsl(222.2,47.4%,11.2%)]`}>
       <CardContent className="p-4 flex flex-col justify-between h-full min-h-[120px]">
         <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">{name}</h3>

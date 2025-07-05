@@ -15,7 +15,7 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
   const data = [{ name: 'consumed', value: percentage }];
 
   return (
-    <Card className="shadow-lg bg-[hsl(var(--chart-4))] dark:bg-card text-foreground">
+    <Card className="shadow-lg bg-[hsl(var(--chart-4))] text-foreground dark:text-[hsl(222.2,47.4%,11.2%)]">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-xl font-bold">Calories Left</CardTitle>
         <Button variant="ghost" size="icon">
@@ -35,10 +35,10 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
             >
               <PolarAngleAxis type="number" domain={[0, 100]} angleAxisId={0} tick={false} />
               <RadialBar
-                background={{ fill: 'hsla(var(--card-foreground), 0.1)' }}
+                background={{ fill: 'hsla(var(--foreground), 0.1)' }}
                 dataKey="value"
                 cornerRadius={10}
-                fill="hsl(var(--card-foreground))"
+                fill="hsl(var(--foreground))"
               />
             </RadialBarChart>
           </ResponsiveContainer>
@@ -46,7 +46,7 @@ export default function CalorieDisplay({ goal, consumed }: CalorieDisplayProps) 
              <span className="text-5xl font-bold tracking-tighter">
               {Math.round(remaining)}
             </span>
-            <span className="text-sm text-muted-foreground mt-1">kcal left</span>
+            <span className="text-sm text-muted-foreground mt-1 dark:text-[hsl(215.4,16.3%,46.9%)]">kcal left</span>
           </div>
         </div>
       </CardContent>
