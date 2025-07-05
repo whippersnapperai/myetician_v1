@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { UserDataContext, type UserDataContextType } from '@/hooks/use-user-data';
 import type { UserData, Meal, DailyLog } from '@/types';
 import { format } from 'date-fns';
-import { auth, db } from '@/lib/firebase';
+import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
 import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +18,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   useEffect(() => {
+    if (!isFirebaseConfigured || !auth) {
+      setLoading(false);
+      return;
+    }
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
       setLoading(false);
@@ -26,7 +30,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   useEffect(() => {
-    if (user) {
+    if (user && isFirebaseConfigured && db) {
       const fetchUserData = async () => {
         const userDocRef = doc(db, 'users', user.uid);
         const userDocSnap = await getDoc(userDocRef);
@@ -66,8 +70,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user, selectedDate]);
 
   const saveUserData = useCallback(async (data: UserData) => {
-    if (!user) {
-      toast({ variant: 'destructive', title: 'Not signed in', description: 'You must be signed in to save your data.' });
+    if (!user || !isFirebaseConfigured || !db) {
+      toast({ variant: 'destructive', title: 'Offline Mode', description: 'Cannot save data. Please configure Firebase.' });
+      setUserData(data);
       return;
     }
     try {
@@ -80,8 +85,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [user, toast]);
 
   const logMeal = useCallback(async (meal: Omit<Meal, 'id' | 'createdAt' | 'date'>) => {
-    if (!user) {
-      toast({ variant: 'destructive', title: 'Not signed in', description: 'You must be signed in to log a meal.' });
+    if (!user || !isFirebaseConfigured || !db) {
+      toast({ variant: 'destructive', title: 'Offline Mode', description: 'Cannot log meal. Please configure Firebase.' });
+      const dateKey = format(selectedDate, 'yyyy-MM-dd');
+      const newMealWithId: Meal = {
+        ...meal,
+        id: `offline-${Date.now()}`,
+        createdAt: new Date().toISOString(),
+        date: dateKey,
+      };
+      setMealLog(prevLog => {
+        const updatedLog = { ...prevLog };
+        const dateMeals = updatedLog[dateKey] ? [newMealWithId, ...updatedLog[dateKey]] : [newMealWithId];
+        updatedLog[dateKey] = dateMeals;
+        return updatedLog;
+      });
       return;
     }
 

@@ -28,6 +28,7 @@ export default function Header() {
   const { user, userData } = useUserData();
 
   const handleLogout = async () => {
+    if (!auth) return;
     await signOut(auth);
     router.push('/onboarding');
   };

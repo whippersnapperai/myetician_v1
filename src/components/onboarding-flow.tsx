@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Mail, Loader2 } from 'lucide-react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { auth, isFirebaseConfigured } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -507,8 +508,8 @@ const StepIntensity = () => {
       <div>
         <CardTitle className="mb-2 font-headline">Set your pace</CardTitle>
         <CardDescription>
-          {goal === 'Maintain weight' 
-            ? 'You\\'ve chosen to maintain your weight. This setting has no effect.' 
+          {goal === 'Maintain weight'
+            ? "You've chosen to maintain your weight. This setting has no effect."
             : `How aggressively do you want to pursue your goal?`}
         </CardDescription>
          <div className="mt-8">
@@ -549,6 +550,15 @@ const StepAuth = ({ onSubmit }: { onSubmit: () => Promise<void> }) => {
 
   const handleGoogleSignIn = async () => {
     setIsSigningIn(true);
+    if (!isFirebaseConfigured || !auth) {
+        toast({
+            variant: "destructive",
+            title: "Firebase Not Configured",
+            description: "Cannot sign in. Please configure Firebase credentials in .env file.",
+        });
+        setIsSigningIn(false);
+        return;
+    }
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);

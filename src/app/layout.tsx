@@ -5,6 +5,8 @@ import { cn } from "@/lib/utils";
 import { Toaster } from "@/components/ui/toaster";
 import { AppProvider } from "@/components/app-provider";
 import { ThemeProvider } from "@/components/theme-provider";
+import { isFirebaseConfigured } from "@/lib/firebase";
+import FirebaseWarning from "@/components/firebase-warning";
 
 const fontPoppins = Poppins({
   subsets: ["latin"],
@@ -52,6 +54,7 @@ export default function RootLayout({
             {children}
           </AppProvider>
         </ThemeProvider>
+        {!isFirebaseConfigured && <FirebaseWarning />}
         <Toaster />
       </body>
     </html>
