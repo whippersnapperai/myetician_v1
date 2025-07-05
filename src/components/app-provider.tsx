@@ -4,67 +4,111 @@ import { useState, useEffect, useCallback, type ReactNode } from 'react';
 import { UserDataContext, type UserDataContextType } from '@/hooks/use-user-data';
 import type { UserData, Meal, DailyLog } from '@/types';
 import { format } from 'date-fns';
-
-const USER_DATA_KEY = 'myetician_user_data';
-const MEAL_LOG_KEY = 'myetician_meal_log';
+import { auth, db } from '@/lib/firebase';
+import { onAuthStateChanged, type User } from 'firebase/auth';
+import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null);
   const [userData, setUserData] = useState<UserData | null>(null);
   const [mealLog, setMealLog] = useState<DailyLog>({});
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const { toast } = useToast();
 
   useEffect(() => {
-    try {
-      const storedUserData = localStorage.getItem(USER_DATA_KEY);
-      if (storedUserData) {
-        setUserData(JSON.parse(storedUserData));
-      }
-
-      const storedMealLog = localStorage.getItem(MEAL_LOG_KEY);
-      if (storedMealLog) {
-        setMealLog(JSON.parse(storedMealLog));
-      }
-    } catch (error) {
-      console.error("Failed to load data from localStorage", error);
-    } finally {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
       setLoading(false);
-    }
+    });
+    return () => unsubscribe();
   }, []);
 
-  const saveUserData = useCallback((data: UserData) => {
-    setUserData(data);
+  useEffect(() => {
+    if (user) {
+      const fetchUserData = async () => {
+        const userDocRef = doc(db, 'users', user.uid);
+        const userDocSnap = await getDoc(userDocRef);
+        if (userDocSnap.exists()) {
+          setUserData(userDocSnap.data() as UserData);
+        } else {
+          setUserData(null);
+        }
+      };
+
+      const fetchMealLog = async () => {
+        const dateKey = format(selectedDate, 'yyyy-MM-dd');
+        const mealLogQuery = query(
+          collection(db, `users/${user.uid}/mealLog`),
+          where('date', '==', dateKey),
+          orderBy('createdAt', 'desc')
+        );
+        const querySnapshot = await getDocs(mealLogQuery);
+        const meals: Meal[] = [];
+        querySnapshot.forEach((doc) => {
+          meals.push({ id: doc.id, ...doc.data() } as Meal);
+        });
+
+        setMealLog(prevLog => ({
+          ...prevLog,
+          [dateKey]: meals,
+        }));
+      };
+      
+      setLoading(true);
+      Promise.all([fetchUserData(), fetchMealLog()]).finally(() => setLoading(false));
+
+    } else {
+      setUserData(null);
+      setMealLog({});
+    }
+  }, [user, selectedDate]);
+
+  const saveUserData = useCallback(async (data: UserData) => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Not signed in', description: 'You must be signed in to save your data.' });
+      return;
+    }
     try {
-      localStorage.setItem(USER_DATA_KEY, JSON.stringify(data));
+      await setDoc(doc(db, 'users', user.uid), data);
+      setUserData(data);
     } catch (error) {
-      console.error("Failed to save user data to localStorage", error);
+      console.error("Failed to save user data to Firestore", error);
+      toast({ variant: 'destructive', title: 'Save Error', description: 'Could not save your profile data.' });
     }
-  }, []);
+  }, [user, toast]);
 
-  const logMeal = useCallback((meal: Omit<Meal, 'id' | 'createdAt'>) => {
-    const newMeal: Meal = {
+  const logMeal = useCallback(async (meal: Omit<Meal, 'id' | 'createdAt' | 'date'>) => {
+    if (!user) {
+      toast({ variant: 'destructive', title: 'Not signed in', description: 'You must be signed in to log a meal.' });
+      return;
+    }
+
+    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    const newMeal: Omit<Meal, 'id'> = {
       ...meal,
-      id: crypto.randomUUID(),
       createdAt: new Date().toISOString(),
+      date: dateKey,
     };
     
-    const dateKey = format(selectedDate, 'yyyy-MM-dd');
+    try {
+      const docRef = await addDoc(collection(db, `users/${user.uid}/mealLog`), newMeal);
+      const newMealWithId: Meal = { ...newMeal, id: docRef.id };
 
-    setMealLog(prevLog => {
-      const updatedLog = { ...prevLog };
-      const dateMeals = updatedLog[dateKey] ? [...updatedLog[dateKey], newMeal] : [newMeal];
-      updatedLog[dateKey] = dateMeals;
+      setMealLog(prevLog => {
+        const updatedLog = { ...prevLog };
+        const dateMeals = updatedLog[dateKey] ? [newMealWithId, ...updatedLog[dateKey]] : [newMealWithId];
+        updatedLog[dateKey] = dateMeals;
+        return updatedLog;
+      });
 
-      try {
-        localStorage.setItem(MEAL_LOG_KEY, JSON.stringify(updatedLog));
-      } catch (error) {
-        console.error("Failed to save meal log to localStorage", error);
-      }
-
-      return updatedLog;
-    });
-  }, [selectedDate]);
-
+    } catch (error) {
+      console.error("Failed to save meal log to Firestore", error);
+      toast({ variant: 'destructive', title: 'Log Error', description: 'Could not log your meal.' });
+    }
+  }, [user, selectedDate, toast]);
+  
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
   const selectedDateMeals = mealLog[selectedDateString] || [];
 
@@ -88,6 +132,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 
   const value: UserDataContextType = { 
+    user,
     userData, 
     mealLog,
     loading, 

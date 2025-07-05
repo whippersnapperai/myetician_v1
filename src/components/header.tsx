@@ -13,25 +13,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
 
 export default function Header() {
   const router = useRouter();
-  const { userData } = useUserData();
+  const { user, userData } = useUserData();
 
-  const handleLogout = () => {
-    localStorage.clear();
+  const handleLogout = async () => {
+    await signOut(auth);
     router.push('/onboarding');
   };
 
-  const getInitials = (name: string) => {
-    return name ? name.charAt(0).toUpperCase() : '';
+  const getInitials = (name?: string | null) => {
+    if (!name) return 'U';
+    const names = name.split(' ');
+    if (names.length > 1 && names[0] && names[1]) {
+      return `${names[0][0]}${names[1][0]}`.toUpperCase();
+    }
+    return name.charAt(0).toUpperCase();
   };
 
   return (
@@ -45,59 +52,62 @@ export default function Header() {
           </Link>
         </div>
         <div className="flex flex-1 items-center justify-end space-x-2">
-          <TooltipProvider delayDuration={0}>
-            <nav className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link href="/summary" passHref>
-                    <Button variant="ghost" size="icon">
-                      <BarChartHorizontal className="h-5 w-5" />
-                      <span className="sr-only">Weekly Summary</span>
-                    </Button>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Weekly Summary</p>
-                </TooltipContent>
-              </Tooltip>
-              <DropdownMenu>
+          {user && (
+            <TooltipProvider delayDuration={0}>
+              <nav className="flex items-center gap-2">
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback>{userData?.user_first_name ? getInitials(userData.user_first_name) : 'U'}</AvatarFallback>
-                        </Avatar>
+                    <Link href="/summary" passHref>
+                      <Button variant="ghost" size="icon">
+                        <BarChartHorizontal className="h-5 w-5" />
+                        <span className="sr-only">Weekly Summary</span>
                       </Button>
-                    </DropdownMenuTrigger>
+                    </Link>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Account</p>
+                    <p>Weekly Summary</p>
                   </TooltipContent>
                 </Tooltip>
-                <DropdownMenuContent className="w-56" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{userData?.user_first_name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
-                        Welcome!
-                      </p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => router.push('/settings')}>
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={handleLogout}>
-                    <LogOut className="mr-2 h-4 w-4" />
-                    <span>Log out</span>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </nav>
-          </TooltipProvider>
+                <DropdownMenu>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                          <Avatar className="h-8 w-8">
+                            {user.photoURL && <AvatarImage src={user.photoURL} alt={user.displayName || ''} />}
+                            <AvatarFallback>{getInitials(user.displayName)}</AvatarFallback>
+                          </Avatar>
+                        </Button>
+                      </DropdownMenuTrigger>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Account</p>
+                    </TooltipContent>
+                  </Tooltip>
+                  <DropdownMenuContent className="w-56" align="end" forceMount>
+                    <DropdownMenuLabel className="font-normal">
+                      <div className="flex flex-col space-y-1">
+                        <p className="text-sm font-medium leading-none">{userData?.user_first_name || user.displayName}</p>
+                        <p className="text-xs leading-none text-muted-foreground">
+                          {user.email}
+                        </p>
+                      </div>
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => router.push('/settings')}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={handleLogout}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>Log out</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </nav>
+            </TooltipProvider>
+          )}
         </div>
       </div>
     </header>

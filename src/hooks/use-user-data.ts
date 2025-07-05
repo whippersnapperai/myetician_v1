@@ -1,13 +1,15 @@
 'use client';
 import { createContext, useContext } from 'react';
+import type { User } from 'firebase/auth';
 import type { UserData, Meal, DailyLog } from '@/types';
 
 export interface UserDataContextType {
+  user: User | null;
   userData: UserData | null;
   mealLog: DailyLog;
   loading: boolean;
-  saveUserData: (data: UserData) => void;
-  logMeal: (meal: Omit<Meal, 'id' | 'createdAt'>) => void;
+  saveUserData: (data: UserData) => Promise<void>;
+  logMeal: (meal: Omit<Meal, 'id' | 'createdAt' | 'date'>) => Promise<void>;
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
   selectedDateMeals: Meal[];

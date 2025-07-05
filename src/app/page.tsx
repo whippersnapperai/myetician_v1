@@ -7,16 +7,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Header from '@/components/header';
 
 export default function Home() {
-  const { userData, loading } = useUserData();
+  const { user, userData, loading } = useUserData();
   const router = useRouter();
 
   useEffect(() => {
-    if (!loading && !userData?.user_caloric_goal) {
+    if (!loading && !user) {
+      router.push('/onboarding');
+      return;
+    }
+    if (!loading && user && !userData?.user_caloric_goal) {
       router.push('/onboarding');
     }
-  }, [userData, loading, router]);
+  }, [user, userData, loading, router]);
 
-  if (loading || !userData?.user_caloric_goal) {
+  if (loading || !user || !userData?.user_caloric_goal) {
     return (
       <div className="flex flex-col min-h-screen bg-background">
         <Header />

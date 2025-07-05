@@ -33,6 +33,7 @@ export interface Meal {
   carbohydrates: number;
   fat: number;
   createdAt: string; // ISO string
+  date: string; // 'YYYY-MM-DD'
   mealType?: MealType;
 }
 
