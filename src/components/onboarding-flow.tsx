@@ -7,7 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useRouter } from 'next/navigation';
 import { Mail, Loader2, Pencil } from 'lucide-react';
-import { GoogleAuthProvider, signInWithRedirect, getRedirectResult, type User } from 'firebase/auth';
+import { GoogleAuthProvider, signInWithPopup, type User } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 
 import { Button } from '@/components/ui/button';
@@ -586,7 +586,7 @@ const StepAuth = () => {
   const { saveUserData } = useUserData();
   const router = useRouter();
   const name = getValues('user_first_name');
-  const [isSigningIn, setIsSigningIn] = useState(true);
+  const [isSigningIn, setIsSigningIn] = useState(false);
   const { toast } = useToast();
 
   const handleFinalSubmit = async (user: User) => {
@@ -622,31 +622,6 @@ const StepAuth = () => {
     router.push('/');
   };
 
-  useEffect(() => {
-    if (!isFirebaseConfigured || !auth) {
-      setIsSigningIn(false);
-      return;
-    }
-    
-    getRedirectResult(auth)
-      .then((result) => {
-        if (result) {
-          handleFinalSubmit(result.user);
-        } else {
-          setIsSigningIn(false); 
-        }
-      })
-      .catch((error) => {
-        console.error("Google Sign-In Error (Redirect)", error);
-        toast({
-          variant: "destructive",
-          title: "Sign-in failed",
-          description: error.message || "Could not complete sign-in with Google.",
-        });
-        setIsSigningIn(false);
-      });
-  }, [auth, toast, saveUserData, router]);
-
   const handleGoogleSignIn = async () => {
     if (!isFirebaseConfigured || !auth) {
         toast({
@@ -658,7 +633,19 @@ const StepAuth = () => {
     }
     setIsSigningIn(true);
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    try {
+      const result = await signInWithPopup(auth, provider);
+      await handleFinalSubmit(result.user);
+    } catch (error: any) {
+      console.error("Google Sign-In Error", error);
+      toast({
+        variant: "destructive",
+        title: "Sign-in failed",
+        description: error.message || "Could not complete sign-in with Google.",
+      });
+    } finally {
+      setIsSigningIn(false);
+    }
   };
 
   const handleEmailSignIn = () => {
