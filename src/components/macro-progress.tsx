@@ -18,15 +18,15 @@ interface MacroCardProps {
 
 const MacroCard = ({ name, consumed, colorClass, icon }: MacroCardProps) => {
   return (
-    <Card className={`shadow-lg ${colorClass} text-card-foreground dark:text-[hsl(222.2,47.4%,11.2%)]`}>
-      <CardContent className="p-4 flex flex-col justify-between h-full min-h-[100px]">
+    <Card className={`shadow-lg ${colorClass} text-card-foreground dark:text-[hsl(222.2,47.4%,11.2%)] h-full`}>
+      <CardContent className="p-3 flex flex-col justify-between h-full">
         <div className="flex justify-between items-center">
-            <h3 className="text-base font-semibold">{name}</h3>
+            <h3 className="text-sm font-semibold">{name}</h3>
             {icon}
         </div>
         <div>
-            <span className="text-2xl font-bold">{Math.round(consumed)}</span>
-            <span className="text-sm ml-1">gram</span>
+            <span className="text-xl font-bold">{Math.round(consumed)}</span>
+            <span className="text-xs ml-1">gram</span>
         </div>
       </CardContent>
     </Card>
@@ -40,26 +40,26 @@ export default function MacroProgress({ consumed, goal }: MacroProgressProps) {
       consumed: consumed.protein,
       goal: goal.protein,
       colorClass: 'bg-[hsl(var(--chart-1))]',
-      icon: <Zap className="w-5 h-5" />
+      icon: <Zap className="w-4 h-4" />
     },
     {
       name: 'Carbs',
       consumed: consumed.carbohydrates,
       goal: goal.carbohydrates,
       colorClass: 'bg-[hsl(var(--chart-2))]',
-      icon: <Flame className="w-5 h-5" />
+      icon: <Flame className="w-4 h-4" />
     },
     {
       name: 'Fat',
       consumed: consumed.fat,
       goal: goal.fat,
       colorClass: 'bg-[hsl(var(--chart-3))]',
-      icon: <Leaf className="w-5 h-5" />
+      icon: <Leaf className="w-4 h-4" />
     }
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="grid grid-cols-3 gap-4 h-full">
       {macroData.map(macro => (
         <MacroCard 
             key={macro.name}

@@ -20,11 +20,17 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
             <div className="lg:col-span-2 space-y-8">
               <DashboardCalendar />
-              <CalorieDisplay
-                goal={userData.user_caloric_goal}
-                consumed={caloriesConsumed}
-              />
-              <MacroProgress consumed={macrosConsumed} goal={macrosGoal} />
+              <div className="flex flex-col md:flex-row gap-4 items-stretch">
+                <div className="md:w-2/5">
+                  <CalorieDisplay
+                    goal={userData.user_caloric_goal}
+                    consumed={caloriesConsumed}
+                  />
+                </div>
+                <div className="md:w-3/5">
+                  <MacroProgress consumed={macrosConsumed} goal={macrosGoal} />
+                </div>
+              </div>
               <MealList meals={selectedDateMeals} />
             </div>
 
