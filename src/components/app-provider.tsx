@@ -6,7 +6,7 @@ import type { UserData, Meal, DailyLog } from '@/types';
 import { format } from 'date-fns';
 import { auth, db, isFirebaseConfigured } from '@/lib/firebase';
 import { onAuthStateChanged, type User } from 'firebase/auth';
-import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy } from 'firebase/firestore';
+import { doc, getDoc, setDoc, collection, addDoc, query, where, getDocs, orderBy, deleteDoc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -128,6 +128,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [user, selectedDate, toast]);
   
+  const deleteMeal = useCallback(async (mealId: string, date: string) => {
+    if (!user || !isFirebaseConfigured || !db) {
+      toast({ variant: 'destructive', title: 'Offline Mode', description: 'Cannot delete meal.' });
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, `users/${user.uid}/mealLog`, mealId));
+
+      setMealLog(prevLog => {
+        const updatedLog = { ...prevLog };
+        const dateMeals = updatedLog[date] || [];
+        updatedLog[date] = dateMeals.filter(meal => meal.id !== mealId);
+        return updatedLog;
+      });
+
+      toast({ title: "Meal deleted!", description: "The meal has been removed from your log." });
+
+    } catch (error) {
+      console.error("Failed to delete meal log from Firestore", error);
+      toast({ variant: 'destructive', title: 'Delete Error', description: 'Could not delete your meal.' });
+    }
+  }, [user, toast]);
+  
   const selectedDateString = format(selectedDate, 'yyyy-MM-dd');
   const selectedDateMeals = mealLog[selectedDateString] || [];
 
@@ -157,6 +181,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     loading, 
     saveUserData, 
     logMeal,
+    deleteMeal,
     selectedDate,
     setSelectedDate,
     selectedDateMeals,

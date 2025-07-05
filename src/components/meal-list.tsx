@@ -2,17 +2,29 @@
 import type { Meal, MealType } from '@/types';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { UtensilsCrossed, Flame } from 'lucide-react';
+import { UtensilsCrossed, Flame, Trash2 } from 'lucide-react';
 import { ScrollArea } from './ui/scroll-area';
 import { useUserData } from '@/hooks/use-user-data';
 import { isToday, format } from 'date-fns';
+import { Button } from './ui/button';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface MealListProps {
   meals: Meal[];
 }
 
 export default function MealList({ meals }: MealListProps) {
-  const { selectedDate } = useUserData();
+  const { selectedDate, deleteMeal } = useUserData();
 
   const title = isToday(selectedDate)
     ? "Today's Meals"
@@ -63,21 +75,42 @@ export default function MealList({ meals }: MealListProps) {
                   <AccordionContent>
                     <ul className="space-y-3 pt-2">
                       {data.meals.map(meal => (
-                        <li key={meal.id} className="flex items-start justify-between p-3 rounded-lg bg-muted/50">
-                          <div>
+                        <li key={meal.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                          <div className="flex-1">
                             <h4 className="font-semibold capitalize">{meal.name}</h4>
                             <p className="text-sm text-muted-foreground">
                               {`P: ${Math.round(meal.protein)}g, C: ${Math.round(meal.carbohydrates)}g, F: ${Math.round(meal.fat)}g`}
                             </p>
                           </div>
-                          <div className="text-right">
-                            <p className="font-bold text-primary flex items-center gap-1">
-                              <Flame className="w-4 h-4" />
-                              {Math.round(meal.calories)}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(meal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </p>
+                          <div className="flex items-center gap-2">
+                            <div className="text-right">
+                              <p className="font-bold text-primary flex items-center gap-1">
+                                <Flame className="w-4 h-4" />
+                                {Math.round(meal.calories)}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {new Date(meal.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              </p>
+                            </div>
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive/70 hover:text-destructive hover:bg-destructive/10">
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent>
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                                  <AlertDialogDescription>
+                                    This action cannot be undone. This will permanently delete this meal from your log.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                  <AlertDialogAction onClick={() => deleteMeal(meal.id, meal.date)} className="bg-destructive hover:bg-destructive/90">Delete</AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                           </div>
                         </li>
                       ))}

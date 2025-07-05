@@ -10,6 +10,7 @@ export interface UserDataContextType {
   loading: boolean;
   saveUserData: (data: UserData, userOverride?: User) => Promise<void>;
   logMeal: (meal: Omit<Meal, 'id' | 'createdAt' | 'date'>) => Promise<void>;
+  deleteMeal: (mealId: string, date: string) => Promise<void>;
   selectedDate: Date;
   setSelectedDate: (date: Date) => void;
   selectedDateMeals: Meal[];
