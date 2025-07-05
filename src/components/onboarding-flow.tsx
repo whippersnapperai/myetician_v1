@@ -34,11 +34,11 @@ const formSchema = z.object({
   dob_year: z.string().min(1, 'Select year'),
   dob_month: z.string().min(1, 'Select month'),
   dob_day: z.string().min(1, 'Select day'),
-  user_height: z.number({ required_error: 'Height is required.'}).min(1, 'Height must be a positive number.'),
+  user_height: z.number({ invalid_type_error: 'Height is required.'}).min(1, 'Height must be a positive number.'),
   user_height_unit: z.enum(['cm', 'ft']),
-  user_current_weight: z.number({ required_error: 'Weight is required.'}).min(1, 'Weight must be a positive number.'),
+  user_current_weight: z.number({ invalid_type_error: 'Weight is required.'}).min(1, 'Weight must be a positive number.'),
   user_current_weight_unit: z.enum(['kg', 'lbs']),
-  user_goal_weight: z.number({ required_error: 'Goal weight is required.'}).min(1, 'Goal weight must be a positive number.'),
+  user_goal_weight: z.number({ invalid_type_error: 'Goal weight is required.'}).min(1, 'Goal weight must be a positive number.'),
   user_goal_weight_unit: z.enum(['kg', 'lbs']),
   user_caloric_goal_intensity_value: z.number().min(0).max(50),
 });
@@ -59,11 +59,11 @@ export default function OnboardingFlow() {
       dob_year: '',
       dob_month: '',
       dob_day: '',
-      user_height: 120,
+      user_height: undefined,
       user_height_unit: 'cm',
-      user_current_weight: 30,
+      user_current_weight: undefined,
       user_current_weight_unit: 'kg',
-      user_goal_weight: 30,
+      user_goal_weight: undefined,
       user_goal_weight_unit: 'kg',
       user_caloric_goal_intensity_value: 20,
     },
@@ -329,12 +329,12 @@ const StepMeasurements = () => {
     const goalWeightUnit = watch('user_goal_weight_unit');
 
     const heightConfigs = {
-        cm: { min: 120, max: 220, step: 1, default: 170 },
-        ft: { min: 4, max: 8, step: 0.1, default: 5.5 },
+        cm: { min: 120, max: 220, step: 1 },
+        ft: { min: 4, max: 8, step: 0.1 },
     };
     const weightConfigs = {
-        kg: { min: 30, max: 180, step: 0.5, default: 70 },
-        lbs: { min: 65, max: 400, step: 1, default: 150 },
+        kg: { min: 30, max: 180, step: 0.5 },
+        lbs: { min: 65, max: 400, step: 1 },
     };
 
     return (
@@ -350,7 +350,7 @@ const StepMeasurements = () => {
                             <div className="flex justify-between items-baseline">
                                 <FormLabel>Height</FormLabel>
                                 <span className="text-lg font-bold text-primary tabular-nums">
-                                    {(field.value || 0).toFixed(heightUnit === 'ft' ? 1 : 0)} {heightUnit}
+                                    {field.value != null ? `${(field.value).toFixed(heightUnit === 'ft' ? 1 : 0)} ${heightUnit}` : '-'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-4">
@@ -359,7 +359,7 @@ const StepMeasurements = () => {
                                         min={heightConfigs[heightUnit].min}
                                         max={heightConfigs[heightUnit].max}
                                         step={heightConfigs[heightUnit].step}
-                                        value={[field.value || heightConfigs[heightUnit].default]}
+                                        value={[field.value ?? heightConfigs[heightUnit].min]}
                                         onValueChange={(value) => field.onChange(value[0])}
                                         className="flex-1"
                                     />
@@ -395,7 +395,7 @@ const StepMeasurements = () => {
                              <div className="flex justify-between items-baseline">
                                 <FormLabel>Current Weight</FormLabel>
                                 <span className="text-lg font-bold text-primary tabular-nums">
-                                    {(field.value || 0).toFixed(currentWeightUnit === 'kg' ? 1 : 0)} {currentWeightUnit}
+                                    {field.value != null ? `${(field.value).toFixed(currentWeightUnit === 'kg' ? 1 : 0)} ${currentWeightUnit}` : '-'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-4">
@@ -404,7 +404,7 @@ const StepMeasurements = () => {
                                         min={weightConfigs[currentWeightUnit].min}
                                         max={weightConfigs[currentWeightUnit].max}
                                         step={weightConfigs[currentWeightUnit].step}
-                                        value={[field.value || weightConfigs[currentWeightUnit].default]}
+                                        value={[field.value ?? weightConfigs[currentWeightUnit].min]}
                                         onValueChange={(value) => field.onChange(value[0])}
                                         className="flex-1"
                                     />
@@ -440,7 +440,7 @@ const StepMeasurements = () => {
                              <div className="flex justify-between items-baseline">
                                 <FormLabel>Goal Weight</FormLabel>
                                 <span className="text-lg font-bold text-primary tabular-nums">
-                                    {(field.value || 0).toFixed(goalWeightUnit === 'kg' ? 1 : 0)} {goalWeightUnit}
+                                    {field.value != null ? `${(field.value).toFixed(goalWeightUnit === 'kg' ? 1 : 0)} ${goalWeightUnit}` : '-'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-4">
@@ -449,7 +449,7 @@ const StepMeasurements = () => {
                                         min={weightConfigs[goalWeightUnit].min}
                                         max={weightConfigs[goalWeightUnit].max}
                                         step={weightConfigs[goalWeightUnit].step}
-                                        value={[field.value || weightConfigs[goalWeightUnit].default]}
+                                        value={[field.value ?? weightConfigs[goalWeightUnit].min]}
                                         onValueChange={(value) => field.onChange(value[0])}
                                         className="flex-1"
                                     />
